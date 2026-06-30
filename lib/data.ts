@@ -9,10 +9,10 @@ export const navItems: NavItem[] = [
 ];
 
 export const stats: Stat[] = [
-  { value: '۲۵+', label: 'سال تجربه' },
-  { value: '۱۸۰+', label: 'پروژه تکمیل‌شده' },
+  { value: '۳۰+', label: 'سال تجربه' },
+  { value: '۸۰+', label: 'پروژه تکمیل‌شده' },
   { value: '۱۲۰۰', label: 'کیلومتر راه‌سازی' },
-  { value: '۵۰۰+', label: 'متخصص مجرب' },
+  { value: '۵۰۰+', label: 'پرسنل' },
 ];
 
 export const services: Service[] = [
@@ -57,26 +57,26 @@ export const services: Service[] = [
 export const projects: Project[] = [
   {
     id: 'p1',
-    title: 'آزادراه تهران – قم (قطعه سوم)',
+    title: 'آزادراه مشهد – چناران (قطعه دوم)',
     client: 'سازمان راهداری و حمل‌ونقل جاده‌ای',
-    date: '۱۴۰۲ – در حال اجرا',
-    location: 'تهران – قم',
+    date: '۱۴۰۴ – در حال اجرا',
+    location: 'مشهد – چناران',
     status: 'active',
     description:
-      'احداث ۴۸ کیلومتر از قطعه سوم آزادراه تهران-قم شامل عملیات خاکی، زیرسازی، آسفالت‌گذاری و تجهیزات ایمنی. این پروژه با استانداردهای روز دنیا در حال اجراست.',
+      'احداث ۱۲ کیلومتر از قطعه سوم آزادراه مشهد-چناران شامل عملیات خاکی، زیرسازی، آسفالت‌گذاری و تجهیزات ایمنی. این پروژه با استانداردهای روز دنیا در حال اجراست.',
     coverImage: '/images/project-1.png',
     gallery: ['/images/project-1.png', '/images/project-3.png', '/images/project-4.png'],
     tags: ['آزادراه', 'آسفالت', 'زیرسازی'],
   },
   {
     id: 'p2',
-    title: 'بزرگراه شهید درستی – مشهد',
+    title: 'بزرگراه فرودگاه – مشهد',
     client: 'شهرداری مشهد',
-    date: '۱۴۰۳ – در حال اجرا',
+    date: '۱۴۰۴ – در حال اجرا',
     location: 'مشهد',
     status: 'active',
     description:
-      'توسعه و دوبانده‌سازی ۳۵ کیلومتر بزرگراه در شهر مشهد. شامل احداث ۶ تقاطع غیرهمسطح و روشنایی معابر.',
+      'توسعه و ترمیم مسیر فرودگاه در شهر مشهد.',
     coverImage: '/images/project-3.png',
     gallery: ['/images/project-3.png', '/images/project-1.png', '/images/project-2.png'],
     tags: ['بزرگراه', 'تقاطع', 'شهری'],
@@ -110,37 +110,45 @@ export const projects: Project[] = [
 ];
 
 export const teamMembers: TeamMember[] = [
-  {
+    {
     id: 't1',
-    name: 'مهندس کاوه رضایی',
-    role: 'مدیرعامل و رئیس هیئت‌مدیره',
+    name: 'مهندس حسن فراوانی',
+    role: 'رئیس هیئت‌مدیره',
     department: 'leadership',
-    bio: 'بیش از ۲۵ سال تجربه در اجرای پروژه‌های بزرگ راه‌سازی. فارغ‌التحصیل دانشگاه تهران در رشته مهندسی عمران.',
+    bio: 'بیش از ۴۰ سال تجربه در صنعت راه‌سازی و مدیریت پروژه‌های ملی.',
     image: '/images/team-ceo.png',
   },
   {
     id: 't2',
-    name: 'مهندس آرش محمدی',
-    role: 'مدیر اجرایی پروژه‌ها',
+    name: 'مهندس مسعود فراوانی',
+    role: 'نائب رئیس هیئت‌مدیره',
     department: 'leadership',
-    bio: 'متخصص مدیریت پروژه‌های بزرگ بزرگراهی با بیش از ۱۵ سال سابقه. دارای گواهی PMP.',
-    image: '/images/team-manager.png',
+    bio: 'بیش از ۳۰ سال تجربه در اجرای پروژه‌های بزرگ راه‌سازی. فارغ‌التحصیل دانشگاه فردوسی در رشته مهندسی عمران.',
+    image: '/images/team-ceo.png',
   },
   {
     id: 't3',
-    name: 'مهندس سینا حیدری',
-    role: 'مهندس ارشد میدانی',
-    department: 'engineers',
-    bio: 'متخصص در اجرای عملیات خاکی و زیرسازی. با تجربه ۱۰ ساله در پروژه‌های کوهستانی.',
-    image: '/images/team-engineer1.png',
+    name: 'مهندس علی دانش‌پژوه',
+    role: 'مدیر عامل',
+    department: 'leadership',
+    bio: 'متخصص مدیریت پروژه‌های بزرگ بزرگراهی با بیش از ۲۰ سال سابقه. دارای گواهی PMP.',
+    image: '/images/team-manager.png',
   },
   {
     id: 't4',
-    name: 'مهندس سارا احمدی',
-    role: 'مهندس کنترل کیفیت',
-    department: 'engineers',
-    bio: 'متخصص آزمون‌های فنی مصالح راه‌سازی. فارغ‌التحصیل دانشگاه صنعتی شریف.',
-    image: '/images/team-engineer2.png',
+    name: 'مهندس محمد طاهری',
+    role: 'مدیر مناقصات و شرکت',
+    department: 'leadership',
+    bio: 'متخصص در اجرای عملیات خاکی و زیرسازی. با تجربه ۲۰ ساله در پروژه‌های کوهستانی.',
+    image: '/images/team-engineer1.png',
+  },
+  {
+    id: 't5',
+    name: 'مهندس حسن منوری',
+    role: 'مهندس منابع انسانی',
+    department: 'leadership',
+    bio: 'متخصص در مدیریت منابع انسانی و توسعه فرهنگ سازمانی. با تجربه ۳۰ ساله در زمینه‌های استخدام، آموزش و توسعه مهارت‌ها.',
+    image: '/images/team-engineer1.png',
   },
 ];
 

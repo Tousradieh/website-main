@@ -142,7 +142,7 @@ export default function HomePage() {
             پروژه بزرگ بعدی شما را ما می‌سازیم
           </h2>
           <p className="text-brand-100/80 text-lg mb-8 leading-relaxed">
-            با تیم کارشناسان توس‌رادیه تماس بگیرید و مشاوره رایگان دریافت کنید.
+            با کارشناسان فروش توس‌رادیه تماس بگیرید و مشاوره رایگان دریافت کنید.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
@@ -152,7 +152,7 @@ export default function HomePage() {
               درخواست مصالح
             </Link>
             <a
-              href="tel:+982188001234"
+              href="tel:051-36082788"
               className="px-8 py-3.5 rounded-md border border-white/30 text-white font-medium hover:bg-white/10 transition-colors"
             >
               تماس با ما

@@ -16,21 +16,21 @@ export default function Footer() {
               <span className="text-white font-bold text-xl">توس‌رادیه</span>
             </div>
             <p className="text-sm leading-relaxed text-brand-100/80 max-w-sm">
-              شرکت راه‌سازی توس‌رادیه با بیش از ۲۵ سال تجربه، پیشرو در احداث و
+              شرکت راه‌سازی توس‌رادیه با بیش از ۳۰ سال تجربه، پیشرو در احداث و
               بازسازی راه‌ها، پل‌ها و زیرساخت‌های جاده‌ای کشور است.
             </p>
             <div className="mt-6 flex flex-col gap-3 text-sm">
               <a href="tel:+982188001234" className="flex items-center gap-3 hover:text-white transition-colors">
                 <Phone size={16} className="text-accent flex-shrink-0" />
-                <span dir="ltr">+98 21 8800 1234</span>
+                <span dir="ltr">051-36082788</span>
               </a>
-              <a href="mailto:info@toussradieh.ir" className="flex items-center gap-3 hover:text-white transition-colors">
+              <a href="mailto:info@tousradieh.ir" className="flex items-center gap-3 hover:text-white transition-colors">
                 <Mail size={16} className="text-accent flex-shrink-0" />
-                <span>info@toussradieh.ir</span>
+                <span>info@tousradieh.ir</span>
               </a>
               <span className="flex items-start gap-3">
                 <MapPin size={16} className="text-accent flex-shrink-0 mt-0.5" />
-                <span>تهران، بلوار کشاورز، ساختمان مرکزی توس‌رادیه</span>
+                <span>مشهد، چهارراه فرامرز عباسی، خیابان ابن سینا غربی، پلاک ۲۷۹</span>
               </span>
             </div>
           </div>
@@ -67,7 +67,6 @@ export default function Footer() {
 
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-brand-100/50">
           <span>© {new Date().getFullYear()} توس‌رادیه. تمامی حقوق محفوظ است.</span>
-          <span>ساخته‌شده با افتخار در ایران</span>
         </div>
       </div>
     </footer>
