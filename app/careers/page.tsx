@@ -110,10 +110,10 @@ export default function CareersPage() {
             <p className="text-muted-foreground max-w-xl mx-auto text-sm leading-relaxed">
               اگر موقعیت مناسبی نیافتید، رزومه خود را به آدرس{' '}
               <a
-                href="mailto:careers@toussradieh.ir"
+                href="mailto:hr@tousradieh.com"
                 className="text-brand-600 hover:underline"
               >
-                careers@toussradieh.ir
+                hr@tousradieh.com
               </a>{' '}
               ارسال کنید.
             </p>

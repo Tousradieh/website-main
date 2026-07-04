@@ -103,7 +103,7 @@ export default function JobModal({ job, onClose }: JobModalProps) {
           </div>
 
           <a
-            href={`mailto:careers@toussradieh.ir?subject=درخواست استخدام: ${encodeURIComponent(job.title)}`}
+            href={`mailto:hr@tousradieh.com?subject=درخواست استخدام: ${encodeURIComponent(job.title)}`}
             className="block w-full text-center py-3.5 px-6 rounded-md bg-brand-900 text-white font-bold text-sm hover:bg-brand-800 transition-colors"
           >
             ارسال رزومه
