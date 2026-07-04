@@ -24,9 +24,9 @@ export default function Footer() {
                 <Phone size={16} className="text-accent flex-shrink-0" />
                 <span dir="ltr">051-36082788</span>
               </a>
-              <a href="mailto:info@tousradieh.ir" className="flex items-center gap-3 hover:text-white transition-colors">
+              <a href="mailto:info@tousradieh.com" className="flex items-center gap-3 hover:text-white transition-colors">
                 <Mail size={16} className="text-accent flex-shrink-0" />
-                <span>info@tousradieh.ir</span>
+                <span>info@tousradieh.com</span>
               </a>
               <span className="flex items-start gap-3">
                 <MapPin size={16} className="text-accent flex-shrink-0 mt-0.5" />
