@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { navItems } from '@/lib/data';
+import Logo from '@/components/Logo';
 
 const employeePortalLinks = [
   {
@@ -68,9 +69,7 @@ export default function Navbar() {
       >
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href="/" className="flex items-center gap-2 group" aria-label="توس‌رادیه – صفحه اصلی">
-            <span className="flex items-center justify-center w-9 h-9 rounded-md bg-accent text-accent-foreground font-black text-base leading-none select-none">
-              TR
-            </span>
+            <Logo />
             <span className="text-white font-heading font-bold text-lg leading-tight">
               توس‌رادیه
             </span>

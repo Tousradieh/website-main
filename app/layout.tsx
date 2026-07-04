@@ -14,7 +14,9 @@ export const metadata: Metadata = {
   description:
     'شرکت توس‌رادیه پیشرو در راه‌سازی، آسفالت، پل‌سازی و تأمین مصالح ساختمانی در ایران. بیش از ۳۰ سال تجربه.',
   keywords: 'راه‌سازی, آسفالت, پل‌سازی, تأمین مصالح, بتن, قیر, ایران',
-  generator: 'v0.app',
+  icons: {
+    icon: '/logo.ico',
+  },
 }
 
 export const viewport: Viewport = {

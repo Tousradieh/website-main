@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { navItems } from '@/lib/data';
+import Logo from '@/components/Logo';
 import { Phone, Mail, MapPin } from 'lucide-react';
 
 export default function Footer() {
@@ -10,9 +11,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <span className="flex items-center justify-center w-9 h-9 rounded-md bg-accent text-accent-foreground font-black text-base">
-                TR
-              </span>
+              <Logo />
               <span className="text-white font-bold text-xl">توس‌رادیه</span>
             </div>
             <p className="text-sm leading-relaxed text-brand-100/80 max-w-sm">
