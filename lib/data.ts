@@ -109,6 +109,9 @@ export const projects: Project[] = [
   },
 ];
 
+/** Switch team section between photo cards (`true`) and title-first cards (`false`). */
+export const teamHasImage = false;
+
 export const teamMembers: TeamMember[] = [
     {
     id: 't1',
