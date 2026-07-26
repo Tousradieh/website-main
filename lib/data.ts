@@ -64,11 +64,12 @@ export const projects: Project[] = [
     status: 'active',
     description:
       'احداث ۱۲ کیلومتر از قطعه سوم آزادراه مشهد-چناران شامل عملیات خاکی، زیرسازی، آسفالت‌گذاری و تجهیزات ایمنی. این پروژه با استانداردهای روز دنیا در حال اجراست.',
-    coverImage: '/images/projects/p1/cover.png',
+    coverImage: '/images/projects/p1/cover.jpg',
     gallery: [
-      '/images/projects/p1/01.png',
-      '/images/projects/p1/02.png',
-      '/images/projects/p1/03.png',
+      '/images/projects/p1/01.jpg',
+      '/images/projects/p1/02.jpg',
+      '/images/projects/p1/03.jpg',
+      '/images/projects/p1/04.mp4',
     ],
     tags: ['آزادراه', 'آسفالت', 'زیرسازی'],
   },

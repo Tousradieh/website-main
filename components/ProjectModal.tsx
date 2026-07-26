@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import type { Project } from '@/lib/types';
-import { X, ChevronLeft, ChevronRight, Calendar, MapPin, User, Tag } from 'lucide-react';
+import { resolveGalleryItem } from '@/lib/gallery';
+import { X, ChevronLeft, ChevronRight, Calendar, MapPin, User, Tag, Play } from 'lucide-react';
 
 interface ProjectModalProps {
   project: Project;
@@ -11,14 +12,15 @@ interface ProjectModalProps {
 }
 
 export default function ProjectModal({ project, onClose }: ProjectModalProps) {
-  const [activeImage, setActiveImage] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const gallery = project.gallery.map(resolveGalleryItem);
+  const active = gallery[activeIndex];
 
-  // Close on Escape
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft') setActiveImage((i) => Math.min(i + 1, project.gallery.length - 1));
-      if (e.key === 'ArrowRight') setActiveImage((i) => Math.max(i - 1, 0));
+      if (e.key === 'ArrowLeft') setActiveIndex((i) => Math.min(i + 1, gallery.length - 1));
+      if (e.key === 'ArrowRight') setActiveIndex((i) => Math.max(i - 1, 0));
     };
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
@@ -26,10 +28,13 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
-  }, [onClose, project.gallery.length]);
+  }, [onClose, gallery.length]);
 
-  const prev = useCallback(() => setActiveImage((i) => Math.max(i - 1, 0)), []);
-  const next = useCallback(() => setActiveImage((i) => Math.min(i + 1, project.gallery.length - 1)), [project.gallery.length]);
+  const prev = useCallback(() => setActiveIndex((i) => Math.max(i - 1, 0)), []);
+  const next = useCallback(
+    () => setActiveIndex((i) => Math.min(i + 1, gallery.length - 1)),
+    [gallery.length],
+  );
 
   return (
     <div
@@ -57,48 +62,61 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
         </button>
 
         {/* Gallery */}
-        <div className="relative h-64 sm:h-80 bg-brand-900 rounded-t-2xl overflow-hidden">
-          <Image
-            key={activeImage}
-            src={project.gallery[activeImage]}
-            alt={`${project.title} – تصویر ${activeImage + 1}`}
-            fill
-            className="object-cover"
-            sizes="(max-width:768px) 100vw, 896px"
-            priority
-          />
+        <div className="relative h-64 sm:h-80 md:h-96 bg-brand-900 rounded-t-2xl overflow-hidden">
+          {active.type === 'video' ? (
+            <video
+              key={activeIndex}
+              src={active.src}
+              poster={active.poster}
+              controls
+              playsInline
+              preload="metadata"
+              className="absolute inset-0 w-full h-full object-contain bg-brand-900"
+              aria-label={`${project.title} – ویدیو ${activeIndex + 1}`}
+            />
+          ) : (
+            <Image
+              key={activeIndex}
+              src={active.src}
+              alt={`${project.title} – تصویر ${activeIndex + 1}`}
+              fill
+              className="object-cover"
+              sizes="(max-width:768px) 100vw, 896px"
+              priority
+            />
+          )}
           {/* Nav arrows */}
-          {project.gallery.length > 1 && (
+          {gallery.length > 1 && (
             <>
               <button
                 onClick={prev}
-                disabled={activeImage === 0}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-brand-900/60 text-white hover:bg-brand-900 disabled:opacity-30 transition-all"
-                aria-label="تصویر قبلی"
+                disabled={activeIndex === 0}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-brand-900/60 text-white hover:bg-brand-900 disabled:opacity-30 transition-all"
+                aria-label="مورد قبلی"
               >
                 <ChevronRight size={20} />
               </button>
               <button
                 onClick={next}
-                disabled={activeImage === project.gallery.length - 1}
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-brand-900/60 text-white hover:bg-brand-900 disabled:opacity-30 transition-all"
-                aria-label="تصویر بعدی"
+                disabled={activeIndex === gallery.length - 1}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-brand-900/60 text-white hover:bg-brand-900 disabled:opacity-30 transition-all"
+                aria-label="مورد بعدی"
               >
                 <ChevronLeft size={20} />
               </button>
             </>
           )}
           {/* Dots */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {project.gallery.map((_, i) => (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
+            {gallery.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setActiveImage(i)}
+                onClick={() => setActiveIndex(i)}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  i === activeImage ? 'bg-accent w-5' : 'bg-white/50'
+                  i === activeIndex ? 'bg-accent w-5' : 'bg-white/50'
                 }`}
-                aria-label={`تصویر ${i + 1}`}
-                aria-current={i === activeImage}
+                aria-label={`مورد ${i + 1}`}
+                aria-current={i === activeIndex}
               />
             ))}
           </div>
@@ -106,22 +124,43 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
 
         {/* Thumbnails */}
         <div className="flex gap-2 p-4 pb-0 overflow-x-auto">
-          {project.gallery.map((img, i) => (
+          {gallery.map((item, i) => (
             <button
               key={i}
-              onClick={() => setActiveImage(i)}
+              onClick={() => setActiveIndex(i)}
               className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                i === activeImage ? 'border-accent' : 'border-transparent'
+                i === activeIndex ? 'border-accent' : 'border-transparent'
               }`}
-              aria-label={`تصویر ${i + 1}`}
+              aria-label={item.type === 'video' ? `ویدیو ${i + 1}` : `تصویر ${i + 1}`}
             >
-              <Image
-                src={img}
-                alt={`تصویر ${i + 1}`}
-                fill
-                className="object-cover"
-                sizes="64px"
-              />
+              {item.type === 'video' ? (
+                item.poster ? (
+                  <>
+                    <Image
+                      src={item.poster}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center bg-brand-900/40">
+                      <Play size={18} className="text-white fill-white" aria-hidden />
+                    </span>
+                  </>
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center bg-brand-900">
+                    <Play size={20} className="text-white fill-white" aria-hidden />
+                  </span>
+                )
+              ) : (
+                <Image
+                  src={item.src}
+                  alt={`تصویر ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="64px"
+                />
+              )}
             </button>
           ))}
         </div>

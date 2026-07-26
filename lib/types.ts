@@ -10,6 +10,16 @@ export interface Service {
   description: string;
 }
 
+/** Image path, or an explicit media object (videos / optional poster). */
+export type GalleryItem =
+  | string
+  | {
+      src: string;
+      type: 'image' | 'video';
+      /** Poster frame for videos (thumbs + before play). */
+      poster?: string;
+    };
+
 export interface Project {
   id: string;
   title: string;
@@ -19,7 +29,7 @@ export interface Project {
   status: 'active' | 'completed';
   description: string;
   coverImage: string;
-  gallery: string[];
+  gallery: GalleryItem[];
   tags: string[];
 }
 
