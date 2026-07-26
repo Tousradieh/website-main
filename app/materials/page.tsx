@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import TurnstileWidget, { resetTurnstile } from '@/components/TurnstileWidget';
 import { materials } from '@/lib/data';
 import { CheckCircle, Loader2 } from 'lucide-react';
 
@@ -25,12 +26,17 @@ const initialForm: LeadFormData = {
   message: '',
 };
 
+const turnstileSiteKey =
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ||
+  '0x4AAAAAAD-Y85vhIK94W0Mm';
+
 export default function MaterialsPage() {
   const [form, setForm] = useState<LeadFormData>(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<LeadFormData>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const validate = (): boolean => {
     const newErrors: Partial<LeadFormData> = {};
@@ -56,11 +62,28 @@ export default function MaterialsPage() {
       return;
     }
 
+    if (!turnstileSiteKey) {
+      setSubmitError('کلید امنیتی کپچا پیکربندی نشده است.');
+      setLoading(false);
+      return;
+    }
+
+    if (!turnstileToken) {
+      setSubmitError('لطفاً تأیید امنیتی را تکمیل کنید.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, recipient: 'procurement' }),
+        body: JSON.stringify({
+          ...form,
+          recipient: 'procurement',
+          turnstileToken,
+          'cf-turnstile-response': turnstileToken,
+        }),
       });
 
       const data = (await res.json().catch(() => null)) as {
@@ -72,12 +95,16 @@ export default function MaterialsPage() {
         setSubmitError(
           data?.error ?? 'ارسال درخواست با خطا مواجه شد. لطفاً دوباره تلاش کنید.'
         );
+        setTurnstileToken(null);
+        resetTurnstile();
         return;
       }
 
       setSubmitted(true);
     } catch {
       setSubmitError('ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.');
+      setTurnstileToken(null);
+      resetTurnstile();
     } finally {
       setLoading(false);
     }
@@ -334,6 +361,19 @@ export default function MaterialsPage() {
                   className="px-4 py-2.5 rounded-md border border-input bg-background text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 resize-none"
                 />
               </div>
+
+              {turnstileSiteKey ? (
+                <div className="mt-6">
+                  <TurnstileWidget
+                    siteKey={turnstileSiteKey}
+                    onToken={setTurnstileToken}
+                  />
+                </div>
+              ) : (
+                <p className="mt-6 text-sm text-destructive">
+                  تأیید امنیتی در دسترس نیست. لطفاً بعداً تلاش کنید.
+                </p>
+              )}
 
               {submitError && (
                 <p

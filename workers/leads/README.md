@@ -1,6 +1,6 @@
 # Leads → Bale Cloudflare Worker
 
-Receives materials-form POSTs from the static site and forwards a Persian message to the procurement manager via Bale Bot API.
+Receives materials-form POSTs from the static site, verifies Cloudflare Turnstile (`TURNSTILE_SECRET`), then forwards a Persian message to the procurement manager via Bale Bot API.
 
 ## Setup
 
@@ -10,6 +10,7 @@ npm install
 npx wrangler login
 npx wrangler secret put BALE_BOT_TOKEN
 npx wrangler secret put BALE_PROCUREMENT_CHAT_ID
+npx wrangler secret put TURNSTILE_SECRET
 ```
 
 Optional: lock CORS to your GitHub Pages origin in `wrangler.toml`:
@@ -25,20 +26,25 @@ ALLOWED_ORIGIN = "https://YOUR_ORG.github.io"
 npm run deploy
 ```
 
-Copy the worker URL (e.g. `https://tousradieh-leads.YOUR_SUBDOMAIN.workers.dev`) into the site env:
+Site env (repo root `.env.local` + GitHub Actions secrets):
 
 ```bash
-# repo root .env.local (and GitHub Actions secret for production builds)
 NEXT_PUBLIC_LEADS_API_URL=https://tousradieh-leads.YOUR_SUBDOMAIN.workers.dev
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAD-Y85vhIK94W0Mm
 ```
 
 ## Local test
 
+`workers/leads/.dev.vars`:
+
+```bash
+BALE_BOT_TOKEN=...
+BALE_PROCUREMENT_CHAT_ID=...
+TURNSTILE_SECRET=...
+```
+
 ```bash
 npm run dev
-curl -X POST http://127.0.0.1:8787 \
-  -H 'Content-Type: application/json' \
-  -d '{"companyName":"تست","contactPerson":"علی","phone":"0912","materialType":"asphalt-hot","quantity":"100 تن"}'
 ```
 
 The procurement manager must message the bot once so `BALE_PROCUREMENT_CHAT_ID` is valid.

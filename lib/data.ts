@@ -64,8 +64,12 @@ export const projects: Project[] = [
     status: 'active',
     description:
       'احداث ۱۲ کیلومتر از قطعه سوم آزادراه مشهد-چناران شامل عملیات خاکی، زیرسازی، آسفالت‌گذاری و تجهیزات ایمنی. این پروژه با استانداردهای روز دنیا در حال اجراست.',
-    coverImage: '/images/project-1.png',
-    gallery: ['/images/project-1.png', '/images/project-3.png', '/images/project-4.png'],
+    coverImage: '/images/projects/p1/cover.png',
+    gallery: [
+      '/images/projects/p1/01.png',
+      '/images/projects/p1/02.png',
+      '/images/projects/p1/03.png',
+    ],
     tags: ['آزادراه', 'آسفالت', 'زیرسازی'],
   },
   {
@@ -77,8 +81,12 @@ export const projects: Project[] = [
     status: 'active',
     description:
       'توسعه و ترمیم مسیر فرودگاه در شهر مشهد.',
-    coverImage: '/images/project-3.png',
-    gallery: ['/images/project-3.png', '/images/project-1.png', '/images/project-2.png'],
+    coverImage: '/images/projects/p2/cover.png',
+    gallery: [
+      '/images/projects/p2/01.png',
+      '/images/projects/p2/02.png',
+      '/images/projects/p2/03.png',
+    ],
     tags: ['بزرگراه', 'تقاطع', 'شهری'],
   },
   {
@@ -90,8 +98,12 @@ export const projects: Project[] = [
     status: 'completed',
     description:
       'احداث ۶۰ کیلومتر جاده کوهستانی با شرایط سخت محیطی. شامل ۴ تونل کوتاه، ۱۲ پل و دیوارهای حائل.',
-    coverImage: '/images/project-2.png',
-    gallery: ['/images/project-2.png', '/images/project-4.png', '/images/project-1.png'],
+    coverImage: '/images/projects/p3/cover.png',
+    gallery: [
+      '/images/projects/p3/01.png',
+      '/images/projects/p3/02.png',
+      '/images/projects/p3/03.png',
+    ],
     tags: ['جاده کوهستانی', 'تونل', 'پل'],
   },
   {
@@ -103,8 +115,12 @@ export const projects: Project[] = [
     status: 'completed',
     description:
       'دوبانده‌سازی ۸۰ کیلومتر محور اصفهان-نائین با اجرای لایه‌های آسفالتی استاندارد و نصب گاردریل‌های ایمنی.',
-    coverImage: '/images/project-4.png',
-    gallery: ['/images/project-4.png', '/images/project-2.png', '/images/project-3.png'],
+    coverImage: '/images/projects/p4/cover.png',
+    gallery: [
+      '/images/projects/p4/01.png',
+      '/images/projects/p4/02.png',
+      '/images/projects/p4/03.png',
+    ],
     tags: ['دوبانده‌سازی', 'آسفالت', 'ایمنی'],
   },
 ];

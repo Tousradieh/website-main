@@ -5,6 +5,7 @@ compatibility_date = "2024-12-01"
 # Set secrets (not committed):
 #   npx wrangler secret put BALE_BOT_TOKEN
 #   npx wrangler secret put BALE_PROCUREMENT_CHAT_ID
+#   npx wrangler secret put TURNSTILE_SECRET
 #
 # Optional CORS origin (defaults to *). Example:
 #   [vars]

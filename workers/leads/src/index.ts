@@ -1,6 +1,7 @@
 interface Env {
   BALE_BOT_TOKEN: string;
   BALE_PROCUREMENT_CHAT_ID: string;
+  TURNSTILE_SECRET: string;
   ALLOWED_ORIGIN?: string;
 }
 
@@ -12,9 +13,13 @@ interface LeadBody {
   quantity?: string;
   message?: string;
   recipient?: string;
+  turnstileToken?: string;
+  'cf-turnstile-response'?: string;
 }
 
 const BALE_API_BASE = 'https://tapi.bale.ai';
+const TURNSTILE_VERIFY_URL =
+  'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 const materialTypeLabels: Record<string, string> = {
   'asphalt-hot': 'آسفالت گرم',
@@ -64,7 +69,14 @@ function validateLead(body: LeadBody): string | null {
   return null;
 }
 
-function formatLeadMessage(lead: Required<Pick<LeadBody, 'companyName' | 'contactPerson' | 'phone' | 'materialType' | 'quantity'>> & { message?: string }): string {
+function formatLeadMessage(
+  lead: Required<
+    Pick<
+      LeadBody,
+      'companyName' | 'contactPerson' | 'phone' | 'materialType' | 'quantity'
+    >
+  > & { message?: string }
+): string {
   const material =
     materialTypeLabels[lead.materialType] ?? lead.materialType;
 
@@ -84,6 +96,33 @@ function formatLeadMessage(lead: Required<Pick<LeadBody, 'companyName' | 'contac
   }
 
   return lines.join('\n');
+}
+
+function clientIp(request: Request): string {
+  const cfIp = request.headers.get('CF-Connecting-IP');
+  if (cfIp) return cfIp;
+  const xff = request.headers.get('X-Forwarded-For');
+  if (xff) return xff.split(',')[0]?.trim() || '';
+  return '';
+}
+
+async function verifyTurnstile(
+  env: Env,
+  token: string,
+  request: Request
+): Promise<boolean> {
+  const res = await fetch(TURNSTILE_VERIFY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      secret: env.TURNSTILE_SECRET,
+      response: token,
+      remoteip: clientIp(request),
+    }),
+  });
+
+  const result = (await res.json()) as { success?: boolean };
+  return result.success === true;
 }
 
 async function sendBaleMessage(
@@ -120,8 +159,12 @@ export default {
       return json(env, request, { ok: false, error: 'Method not allowed' }, 405);
     }
 
-    if (!env.BALE_BOT_TOKEN || !env.BALE_PROCUREMENT_CHAT_ID) {
-      console.error('Missing BALE_BOT_TOKEN or BALE_PROCUREMENT_CHAT_ID');
+    if (
+      !env.BALE_BOT_TOKEN ||
+      !env.BALE_PROCUREMENT_CHAT_ID ||
+      !env.TURNSTILE_SECRET
+    ) {
+      console.error('Missing required Worker secrets');
       return json(
         env,
         request,
@@ -135,6 +178,30 @@ export default {
       body = (await request.json()) as LeadBody;
     } catch {
       return json(env, request, { ok: false, error: 'درخواست نامعتبر است' }, 400);
+    }
+
+    const turnstileToken =
+      body.turnstileToken?.trim() ||
+      body['cf-turnstile-response']?.trim() ||
+      '';
+
+    if (!turnstileToken) {
+      return json(
+        env,
+        request,
+        { ok: false, error: 'لطفاً تأیید امنیتی را تکمیل کنید.' },
+        400
+      );
+    }
+
+    const captchaOk = await verifyTurnstile(env, turnstileToken, request);
+    if (!captchaOk) {
+      return json(
+        env,
+        request,
+        { ok: false, error: 'تأیید امنیتی نامعتبر است. لطفاً دوباره تلاش کنید.' },
+        403
+      );
     }
 
     const recipient = body.recipient ?? 'procurement';
