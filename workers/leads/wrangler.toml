@@ -1,0 +1,11 @@
+name = "tousradieh-leads"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# Set secrets (not committed):
+#   npx wrangler secret put BALE_BOT_TOKEN
+#   npx wrangler secret put BALE_PROCUREMENT_CHAT_ID
+#
+# Optional CORS origin (defaults to *). Example:
+#   [vars]
+#   ALLOWED_ORIGIN = "https://your-org.github.io"

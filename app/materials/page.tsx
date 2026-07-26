@@ -30,6 +30,7 @@ export default function MaterialsPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<LeadFormData>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const validate = (): boolean => {
     const newErrors: Partial<LeadFormData> = {};
@@ -46,9 +47,40 @@ export default function MaterialsPage() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setSubmitted(true);
+    setSubmitError(null);
+
+    const apiUrl = process.env.NEXT_PUBLIC_LEADS_API_URL?.trim();
+    if (!apiUrl) {
+      setSubmitError('آدرس سرویس ارسال پیکربندی نشده است.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, recipient: 'procurement' }),
+      });
+
+      const data = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
+
+      if (!res.ok || !data?.ok) {
+        setSubmitError(
+          data?.error ?? 'ارسال درخواست با خطا مواجه شد. لطفاً دوباره تلاش کنید.'
+        );
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setSubmitError('ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (
@@ -302,6 +334,15 @@ export default function MaterialsPage() {
                   className="px-4 py-2.5 rounded-md border border-input bg-background text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 resize-none"
                 />
               </div>
+
+              {submitError && (
+                <p
+                  role="alert"
+                  className="mt-6 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-4 py-3"
+                >
+                  {submitError}
+                </p>
+              )}
 
               <button
                 type="submit"

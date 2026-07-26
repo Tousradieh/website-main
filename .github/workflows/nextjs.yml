@@ -74,6 +74,9 @@ jobs:
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Next.js
+        env:
+          # Cloudflare Worker URL for materials leads (set in repo Secrets)
+          NEXT_PUBLIC_LEADS_API_URL: ${{ secrets.NEXT_PUBLIC_LEADS_API_URL }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
