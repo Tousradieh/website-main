@@ -3,6 +3,7 @@ import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import ServicesGrid from '@/components/ServicesGrid';
 import TeamPreview from '@/components/TeamPreview';
+import CertificatesPreview from '@/components/CertificatesPreview';
 import Link from 'next/link';
 import Image from 'next/image';
 import { projects } from '@/lib/data';
@@ -77,6 +78,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <CertificatesPreview />
 
       {/* Why Choose Us */}
       <section className="py-20 md:py-28 bg-background" aria-labelledby="why-heading">

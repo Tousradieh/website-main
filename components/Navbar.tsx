@@ -75,12 +75,12 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-0.5 xl:gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                className={`px-2.5 xl:px-3.5 py-2 rounded-md text-xs xl:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
                   isActive(item.href)
                     ? 'bg-accent text-accent-foreground'
                     : 'text-brand-100 hover:text-white hover:bg-white/10'
@@ -90,11 +90,11 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <div className="relative mr-3" ref={employeeMenuRef}>
+            <div className="relative mr-2 xl:mr-3" ref={employeeMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsEmployeeMenuOpen((prev) => !prev)}
-                className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-brand-100 transition-colors duration-200 hover:bg-white/10 hover:text-white"
+                className="flex items-center gap-1.5 rounded-md px-2.5 xl:px-4 py-2 text-xs xl:text-sm font-medium text-brand-100 transition-colors duration-200 hover:bg-white/10 hover:text-white whitespace-nowrap"
               >
                 <span>پنل کارکنان</span>
                 <ChevronDown
@@ -128,7 +128,7 @@ export default function Navbar() {
 
             <Link
               href="/materials"
-              className="mr-3 px-5 py-2 rounded-md bg-accent text-accent-foreground text-sm font-bold hover:bg-accent/90 transition-colors"
+              className="mr-2 xl:mr-3 px-4 xl:px-5 py-2 rounded-md bg-accent text-accent-foreground text-xs xl:text-sm font-bold hover:bg-accent/90 transition-colors whitespace-nowrap"
             >
               درخواست مصالح
             </Link>
@@ -136,7 +136,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setIsOpen((prev) => !prev)}
-            className="md:hidden p-2 rounded-md text-white hover:bg-white/10 transition-colors"
+            className="lg:hidden p-2 rounded-md text-white hover:bg-white/10 transition-colors"
             aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
             aria-expanded={isOpen}
             aria-controls="mobile-menu"
@@ -147,8 +147,8 @@ export default function Navbar() {
 
         <div
           id="mobile-menu"
-          className={`md:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? 'max-h-112 pb-4' : 'max-h-0'
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${
+            isOpen ? 'max-h-[36rem] pb-4' : 'max-h-0'
           }`}
           aria-hidden={!isOpen}
         >

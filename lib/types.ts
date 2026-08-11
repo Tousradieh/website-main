@@ -64,3 +64,33 @@ export interface Stat {
   value: string;
   label: string;
 }
+
+export interface OrganizationPillar {
+  title: string;
+  description: string;
+}
+
+export interface OrganizationInfo {
+  history: string[];
+  mission: string;
+  missionPillars: OrganizationPillar[];
+  vision: string;
+  visionPillars: OrganizationPillar[];
+}
+
+export interface CsrInitiative {
+  id: string;
+  title: string;
+  description: string;
+  /** Lucide icon name key used by the about page. */
+  icon: 'hospital' | 'mosque' | 'school' | 'education';
+}
+
+export interface Certificate {
+  id: string;
+  title: string;
+  issuer: string;
+  year?: string;
+  description: string;
+  image: string;
+}

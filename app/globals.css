@@ -126,3 +126,36 @@ html {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+/* Certificates marquee carousel */
+.certificates-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to left, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to left, transparent, black 8%, black 92%, transparent);
+}
+
+.certificates-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1.5rem;
+  animation: certificates-marquee-scroll 40s linear infinite;
+}
+
+.certificates-marquee:hover .certificates-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes certificates-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .certificates-marquee-track {
+    animation: none;
+  }
+}
