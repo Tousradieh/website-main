@@ -23,16 +23,16 @@ export default function CertificatesPage() {
       </section>
 
       <section className="py-20 md:py-28 bg-background" aria-labelledby="certificates-heading">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 id="certificates-heading" className="sr-only">
             فهرست گواهی‌نامه‌ها
           </h2>
 
-          <ul className="divide-y divide-border">
+          <ul className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-2 lg:gap-y-0">
             {certificates.map((cert) => (
               <li
                 key={cert.id}
-                className="flex flex-col sm:flex-row gap-5 sm:gap-6 py-8 first:pt-0 last:pb-0"
+                className="flex flex-col sm:flex-row gap-5 sm:gap-6 py-8 border-b border-border"
               >
                 <div className="relative w-24 h-32 flex-shrink-0 self-start bg-brand-50">
                   <Image
