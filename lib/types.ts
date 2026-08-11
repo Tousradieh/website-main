@@ -40,6 +40,8 @@ export interface TeamMember {
   department: 'leadership' | 'engineers' | 'culture';
   bio: string;
   image: string;
+  /** Parent member id in the org chart; `null` for the root. */
+  reportsTo?: string | null;
 }
 
 export interface JobPosition {

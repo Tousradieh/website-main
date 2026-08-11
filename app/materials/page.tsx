@@ -131,13 +131,13 @@ export default function MaterialsPage() {
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-brand-100 text-sm font-medium mb-4">
-            تأمین مصالح
+            مصالح و توانمندی‌ها
           </span>
           <h1 className="text-white font-heading font-black text-4xl md:text-5xl text-balance mb-4">
-            تأمین مصالح صنعتی با کیفیت تضمینی
+            مصالح و توانمندی‌های اجرایی
           </h1>
           <p className="text-brand-100/80 text-lg max-w-2xl mx-auto leading-relaxed">
-            آسفالت، بتن و قیر صنعتی با استانداردهای بین‌المللی. تحویل در سرتاسر ایران.
+            ماشین‌آلات، آسفالت گرم و سرد، و مصالح دانه‌بندی‌شده برای پروژه‌های راه‌سازی و عمرانی.
           </p>
         </div>
       </section>
@@ -148,7 +148,7 @@ export default function MaterialsPage() {
           <h2 id="materials-heading" className="sr-only">
             محصولات ما
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {materials.map((mat) => (
               <article key={mat.id} className="bg-card rounded-xl overflow-hidden border border-border hover:shadow-lg transition-shadow">
                 <div className="relative h-48 overflow-hidden">
@@ -308,13 +308,13 @@ export default function MaterialsPage() {
                     aria-invalid={!!errors.materialType}
                   >
                     <option value="">انتخاب کنید...</option>
+                    <option value="machinery">ماشین‌آلات و تجهیزات</option>
                     <option value="asphalt-hot">آسفالت گرم</option>
                     <option value="asphalt-cold">آسفالت سرد</option>
-                    <option value="concrete">بتن آماده</option>
-                    <option value="bitumen-60">قیر ۶۰/۷۰</option>
-                    <option value="bitumen-80">قیر ۸۰/۱۰۰</option>
-                    <option value="bitumen-pmb">قیر پلیمری PMB</option>
-                    <option value="emulsion">امولسیون قیری</option>
+                    <option value="crushed-mountain">مصالح شکسته کوهی</option>
+                    <option value="crushed-river">مصالح رودخانه‌ای</option>
+                    <option value="gravel-pea">گراویه و نخودری</option>
+                    <option value="crushed-sand">ماسه شکسته</option>
                     <option value="other">سایر</option>
                   </select>
                   {errors.materialType && (

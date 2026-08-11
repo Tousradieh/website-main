@@ -22,13 +22,13 @@ const TURNSTILE_VERIFY_URL =
   'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 const materialTypeLabels: Record<string, string> = {
+  machinery: 'ماشین‌آلات و تجهیزات',
   'asphalt-hot': 'آسفالت گرم',
   'asphalt-cold': 'آسفالت سرد',
-  concrete: 'بتن آماده',
-  'bitumen-60': 'قیر ۶۰/۷۰',
-  'bitumen-80': 'قیر ۸۰/۱۰۰',
-  'bitumen-pmb': 'قیر پلیمری PMB',
-  emulsion: 'امولسیون قیری',
+  'crushed-mountain': 'مصالح شکسته کوهی',
+  'crushed-river': 'مصالح رودخانه‌ای',
+  'gravel-pea': 'گراویه و نخودری',
+  'crushed-sand': 'ماسه شکسته',
   other: 'سایر',
 };
 

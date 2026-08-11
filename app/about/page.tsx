@@ -1,5 +1,6 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import OrgChart from '@/components/OrgChart';
 import { organizationInfo, csrInitiatives } from '@/lib/data';
 import type { CsrInitiative } from '@/lib/types';
 import {
@@ -33,12 +34,11 @@ export default function AboutPage() {
             درباره ما
           </h1>
           <p className="text-brand-100/70 text-lg max-w-2xl mx-auto leading-relaxed">
-            تاریخچه، مأموریت، چشم‌انداز و مسئولیت اجتماعی توس‌رادیه در مسیر توسعه زیرساخت کشور.
+            تاریخچه، مأموریت، چشم‌انداز، ساختار سازمانی و مسئولیت اجتماعی توس‌رادیه.
           </p>
         </div>
       </section>
 
-      {/* History */}
       <section className="py-20 md:py-28 bg-background" aria-labelledby="history-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
@@ -68,7 +68,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Mission & Vision */}
       <section className="py-20 md:py-28 bg-brand-50" aria-labelledby="mission-vision-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
@@ -123,8 +122,32 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* CSR */}
-      <section className="py-20 md:py-28 bg-background" aria-labelledby="csr-heading">
+      <section
+        id="team"
+        className="scroll-mt-24 py-20 md:py-28 bg-background"
+        aria-labelledby="team-heading"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="inline-block px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-sm font-medium mb-3">
+              ساختار سازمانی
+            </span>
+            <h2
+              id="team-heading"
+              className="font-heading font-black text-brand-900 text-3xl md:text-4xl text-balance mb-4"
+            >
+              تیم ما
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              چارت سازمانی توس‌رادیه از هیئت‌مدیره تا واحدهای اجرایی.
+            </p>
+          </div>
+
+          <OrgChart />
+        </div>
+      </section>
+
+      <section className="py-20 md:py-28 bg-brand-50" aria-labelledby="csr-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <span className="inline-block px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-sm font-medium mb-3">

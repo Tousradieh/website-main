@@ -30,10 +30,10 @@ export default function TeamPreview({ hasImage = teamHasImage }: TeamPreviewProp
             </p>
           </div>
           <Link
-            href="/team"
+            href="/about#team"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-brand-800 text-white font-medium text-sm hover:bg-brand-700 transition-colors self-start md:self-auto"
           >
-            مشاهده کامل تیم
+            مشاهده ساختار سازمانی
             <ArrowLeft size={16} className="rtl-flip" />
           </Link>
         </div>

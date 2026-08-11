@@ -55,7 +55,7 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">خدمات ما</h3>
             <ul className="flex flex-col gap-2">
-              {['راه‌سازی و آسفالت', 'پل‌سازی', 'تأمین مصالح', 'عمران شهری', 'مشاوره فنی'].map((s) => (
+              {['راه‌سازی', 'ابنیه و ساختمان', 'تعمیر و نگهداری راه', 'محوطه و شهرک‌سازی'].map((s) => (
                 <li key={s} className="text-sm text-brand-100/80">
                   {s}
                 </li>
