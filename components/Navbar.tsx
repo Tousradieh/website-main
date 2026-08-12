@@ -153,7 +153,7 @@ export default function Navbar() {
                     </button>
 
                     {isAboutMenuOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-white/10 bg-brand-950/95 p-2 shadow-xl">
+                      <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-white/15 bg-brand-900 p-2 shadow-xl">
                         <Link
                           href="/about"
                           onClick={() => setIsAboutMenuOpen(false)}
@@ -199,7 +199,7 @@ export default function Navbar() {
               </button>
 
               {isEmployeeMenuOpen && (
-                <div className="absolute left-0 top-full mt-2 w-72 rounded-lg border border-white/10 bg-brand-950/95 p-2 shadow-xl">
+                <div className="absolute left-0 top-full mt-2 w-72 rounded-lg border border-white/15 bg-brand-900 p-2 shadow-xl">
                   {employeePortalLinks.map((link) => (
                     <a
                       key={link.href}
@@ -270,7 +270,7 @@ export default function Navbar() {
                     </button>
 
                     {isAboutMenuOpen && (
-                      <div className="mt-1 space-y-1 rounded-md bg-white/5 p-2">
+                      <div className="mt-1 space-y-1 rounded-md bg-brand-800 p-2">
                         <Link
                           href="/about"
                           onClick={closeMobileMenu}
@@ -327,7 +327,7 @@ export default function Navbar() {
               </button>
 
               {isEmployeeMenuOpen && (
-                <div className="mt-1 space-y-1 rounded-md bg-white/5 p-2">
+                <div className="mt-1 space-y-1 rounded-md bg-brand-800 p-2">
                   {employeePortalLinks.map((link) => (
                     <a
                       key={link.href}
