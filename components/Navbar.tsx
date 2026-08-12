@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, Menu, X } from 'lucide-react';
-import { navItems } from '@/lib/data';
+import { aboutNavSections, navItems } from '@/lib/data';
 import Logo from '@/components/Logo';
 
 const employeePortalLinks = [
@@ -23,9 +23,13 @@ const employeePortalLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isEmployeeMenuOpen, setIsEmployeeMenuOpen] = useState(false);
+  const [isAboutMenuOpen, setIsAboutMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const employeeMenuRef = useRef<HTMLDivElement>(null);
+  const desktopEmployeeRef = useRef<HTMLDivElement>(null);
+  const mobileEmployeeRef = useRef<HTMLDivElement>(null);
+  const desktopAboutRef = useRef<HTMLDivElement>(null);
+  const mobileAboutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -36,15 +40,29 @@ export default function Navbar() {
   useEffect(() => {
     setIsOpen(false);
     setIsEmployeeMenuOpen(false);
+    setIsAboutMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
+    if (!isOpen) {
+      setIsEmployeeMenuOpen(false);
+      setIsAboutMenuOpen(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        employeeMenuRef.current &&
-        !employeeMenuRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node;
+      const inDesktopEmployee = desktopEmployeeRef.current?.contains(target);
+      const inMobileEmployee = mobileEmployeeRef.current?.contains(target);
+      const inDesktopAbout = desktopAboutRef.current?.contains(target);
+      const inMobileAbout = mobileAboutRef.current?.contains(target);
+
+      if (!inDesktopEmployee && !inMobileEmployee) {
         setIsEmployeeMenuOpen(false);
+      }
+      if (!inDesktopAbout && !inMobileAbout) {
+        setIsAboutMenuOpen(false);
       }
     };
 
@@ -54,6 +72,40 @@ export default function Navbar() {
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
+
+  const closeMobileMenu = () => {
+    setIsOpen(false);
+    setIsEmployeeMenuOpen(false);
+    setIsAboutMenuOpen(false);
+  };
+
+  const renderNavLink = (item: (typeof navItems)[number], compact = false) => {
+    if (item.href === '/about') {
+      return null;
+    }
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={
+          compact
+            ? `px-4 py-3 rounded-md text-sm font-medium transition-colors ${
+                isActive(item.href)
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-brand-100 hover:text-white hover:bg-white/10'
+              }`
+            : `px-2.5 xl:px-3.5 py-2 rounded-md text-xs xl:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                isActive(item.href)
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-brand-100 hover:text-white hover:bg-white/10'
+              }`
+        }
+      >
+        {item.label}
+      </Link>
+    );
+  };
 
   return (
     <header
@@ -76,25 +128,66 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden lg:flex items-center gap-0.5 xl:gap-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-2.5 xl:px-3.5 py-2 rounded-md text-xs xl:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
-                  isActive(item.href)
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-brand-100 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              if (item.href === '/about') {
+                return (
+                  <div key={item.href} className="relative" ref={desktopAboutRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsAboutMenuOpen((prev) => !prev)}
+                      className={`flex items-center gap-1 rounded-md px-2.5 xl:px-3.5 py-2 text-xs xl:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                        isActive('/about')
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-brand-100 hover:text-white hover:bg-white/10'
+                      }`}
+                      aria-expanded={isAboutMenuOpen}
+                      aria-haspopup="true"
+                    >
+                      <span>{item.label}</span>
+                      <ChevronDown
+                        size={14}
+                        className={`transition-transform duration-200 ${
+                          isAboutMenuOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
 
-            <div className="relative mr-2 xl:mr-3" ref={employeeMenuRef}>
+                    {isAboutMenuOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-white/10 bg-brand-950/95 p-2 shadow-xl">
+                        <Link
+                          href="/about"
+                          onClick={() => setIsAboutMenuOpen(false)}
+                          className="block rounded-md px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                        >
+                          درباره ما
+                        </Link>
+                        <div className="my-1 border-t border-white/10" />
+                        {aboutNavSections.map((section) => (
+                          <Link
+                            key={section.href}
+                            href={section.href}
+                            onClick={() => setIsAboutMenuOpen(false)}
+                            className="block rounded-md px-3 py-2.5 text-sm text-brand-100 transition-colors hover:bg-white/10 hover:text-white"
+                          >
+                            {section.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return renderNavLink(item);
+            })}
+
+            <div className="relative mr-2 xl:mr-3" ref={desktopEmployeeRef}>
               <button
                 type="button"
                 onClick={() => setIsEmployeeMenuOpen((prev) => !prev)}
                 className="flex items-center gap-1.5 rounded-md px-2.5 xl:px-4 py-2 text-xs xl:text-sm font-medium text-brand-100 transition-colors duration-200 hover:bg-white/10 hover:text-white whitespace-nowrap"
+                aria-expanded={isEmployeeMenuOpen}
+                aria-haspopup="true"
               >
                 <span>پنل کارکنان</span>
                 <ChevronDown
@@ -147,31 +240,82 @@ export default function Navbar() {
 
         <div
           id="mobile-menu"
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? 'max-h-[36rem] pb-4' : 'max-h-0'
+          className={`lg:hidden overflow-y-auto transition-all duration-300 ${
+            isOpen ? 'max-h-[min(36rem,calc(100dvh-5rem))] pb-4' : 'max-h-0 overflow-hidden'
           }`}
           aria-hidden={!isOpen}
         >
           <div className="flex flex-col gap-1 pt-2 border-t border-white/10">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-4 py-3 rounded-md text-sm font-medium transition-colors ${
-                  isActive(item.href)
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-brand-100 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              if (item.href === '/about') {
+                return (
+                  <div key={item.href} className="px-2 py-1" ref={mobileAboutRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsAboutMenuOpen((prev) => !prev)}
+                      className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-sm font-medium transition-colors ${
+                        isActive('/about')
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-brand-100 hover:bg-white/10 hover:text-white'
+                      }`}
+                      aria-expanded={isAboutMenuOpen}
+                    >
+                      <span>{item.label}</span>
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform duration-200 ${
+                          isAboutMenuOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
 
-            <div className="px-2 py-1">
+                    {isAboutMenuOpen && (
+                      <div className="mt-1 space-y-1 rounded-md bg-white/5 p-2">
+                        <Link
+                          href="/about"
+                          onClick={closeMobileMenu}
+                          className="block rounded-md px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                        >
+                          مشاهده صفحه
+                        </Link>
+                        {aboutNavSections.map((section) => (
+                          <Link
+                            key={section.href}
+                            href={section.href}
+                            onClick={closeMobileMenu}
+                            className="block rounded-md px-3 py-2.5 text-sm text-brand-100 transition-colors hover:bg-white/10 hover:text-white"
+                          >
+                            {section.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={closeMobileMenu}
+                  className={`px-4 py-3 rounded-md text-sm font-medium transition-colors ${
+                    isActive(item.href)
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-brand-100 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+
+            <div className="px-2 py-1" ref={mobileEmployeeRef}>
               <button
                 type="button"
                 onClick={() => setIsEmployeeMenuOpen((prev) => !prev)}
                 className="flex w-full items-center justify-between rounded-md px-3 py-3 text-sm font-medium text-brand-100 transition-colors hover:bg-white/10 hover:text-white"
+                aria-expanded={isEmployeeMenuOpen}
               >
                 <span>پنل کارکنان</span>
                 <ChevronDown
@@ -205,6 +349,7 @@ export default function Navbar() {
 
             <Link
               href="/materials"
+              onClick={closeMobileMenu}
               className="mt-2 px-4 py-3 rounded-md bg-accent text-accent-foreground text-sm font-bold text-center"
             >
               درخواست مصالح

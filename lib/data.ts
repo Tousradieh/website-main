@@ -20,6 +20,14 @@ export const navItems: NavItem[] = [
   { label: 'موقعیت‌های شغلی', href: '/careers' },
 ];
 
+/** In-page sections for the About dropdown in the navbar. */
+export const aboutNavSections: NavItem[] = [
+  { label: 'تاریخچه', href: '/about#history' },
+  { label: 'مأموریت و چشم‌انداز', href: '/about#mission-vision' },
+  { label: 'تیم ما', href: '/about#team' },
+  { label: 'مسئولیت اجتماعی', href: '/about#csr' },
+];
+
 export const stats: Stat[] = [
   { value: '۳۰+', label: 'سال تجربه' },
   { value: '۸۰+', label: 'پروژه تکمیل‌شده' },

@@ -39,7 +39,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-20 md:py-28 bg-background" aria-labelledby="history-heading">
+      <section
+        id="history"
+        className="scroll-mt-24 py-20 md:py-28 bg-background"
+        aria-labelledby="history-heading"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
@@ -68,7 +72,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-20 md:py-28 bg-brand-50" aria-labelledby="mission-vision-heading">
+      <section
+        id="mission-vision"
+        className="scroll-mt-24 py-20 md:py-28 bg-brand-50"
+        aria-labelledby="mission-vision-heading"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <span className="inline-block px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-sm font-medium mb-3">
@@ -147,7 +155,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-20 md:py-28 bg-brand-50" aria-labelledby="csr-heading">
+      <section
+        id="csr"
+        className="scroll-mt-24 py-20 md:py-28 bg-brand-50"
+        aria-labelledby="csr-heading"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <span className="inline-block px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-sm font-medium mb-3">

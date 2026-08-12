@@ -160,7 +160,7 @@ html {
   }
 }
 
-/* Organizational chart connectors */
+/* Organizational chart connectors — tree layout on all breakpoints (scroll on small screens) */
 .org-chart-tree,
 .org-chart-children {
   list-style: none;
@@ -168,10 +168,18 @@ html {
   padding: 0;
 }
 
+.org-chart {
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem;
+}
+
 .org-chart-tree {
   display: flex;
   justify-content: center;
   padding-block: 0.5rem;
+  width: max-content;
+  min-width: 100%;
+  margin-inline: auto;
 }
 
 .org-chart-node {
@@ -180,31 +188,43 @@ html {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-inline: 0.75rem;
+  padding-inline: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .org-chart-node {
+    padding-inline: 0.75rem;
+  }
 }
 
 .org-chart-card {
   position: relative;
   z-index: 1;
-  width: 100%;
-  max-width: 15rem;
+  width: 8.5rem;
+  max-width: 8.5rem;
   border-radius: 0.5rem;
   border: 1px solid var(--color-border, oklch(0.9 0.01 255));
   background: var(--color-card, #fff);
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .org-chart-card {
+    width: 100%;
+    max-width: 15rem;
+    padding: 0.75rem 1rem;
+  }
 }
 
 .org-chart-children {
   position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: center;
+  width: auto;
   padding-top: 1.5rem;
-}
-
-.org-chart-children > .org-chart-node + .org-chart-node {
-  margin-top: 1.5rem;
 }
 
 /*
@@ -222,55 +242,41 @@ html {
   transform: translateX(-50%);
 }
 
-@media (min-width: 768px) {
-  .org-chart-children {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: flex-start;
-    justify-content: center;
-    width: auto;
-  }
+/*
+ * One stem from the parent down to the horizontal bar,
+ * only when there are 2+ siblings (avoids double line with ::before).
+ */
+.org-chart-children:has(> .org-chart-node:not(:only-child))::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 1.5rem;
+  background: oklch(0.55 0.06 255);
+  transform: translateX(-50%);
+}
 
-  .org-chart-children > .org-chart-node + .org-chart-node {
-    margin-top: 0;
-  }
+/* Horizontal bar segments between siblings */
+.org-chart-children > .org-chart-node:not(:only-child)::after {
+  content: '';
+  position: absolute;
+  top: -1.5rem;
+  height: 2px;
+  background: oklch(0.55 0.06 255);
+}
 
-  /*
-   * One stem from the parent down to the horizontal bar,
-   * only when there are 2+ siblings (avoids double line with ::before).
-   */
-  .org-chart-children:has(> .org-chart-node:not(:only-child))::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 2px;
-    height: 1.5rem;
-    background: oklch(0.55 0.06 255);
-    transform: translateX(-50%);
-  }
+.org-chart-children > .org-chart-node:not(:only-child):not(:first-child):not(:last-child)::after {
+  left: 0;
+  width: 100%;
+}
 
-  /* Horizontal bar segments between siblings */
-  .org-chart-children > .org-chart-node:not(:only-child)::after {
-    content: '';
-    position: absolute;
-    top: -1.5rem;
-    height: 2px;
-    background: oklch(0.55 0.06 255);
-  }
+.org-chart-children > .org-chart-node:first-child:not(:only-child)::after {
+  left: 50%;
+  width: 50%;
+}
 
-  .org-chart-children > .org-chart-node:not(:only-child):not(:first-child):not(:last-child)::after {
-    left: 0;
-    width: 100%;
-  }
-
-  .org-chart-children > .org-chart-node:first-child:not(:only-child)::after {
-    left: 50%;
-    width: 50%;
-  }
-
-  .org-chart-children > .org-chart-node:last-child:not(:only-child)::after {
-    left: 0;
-    width: 50%;
-  }
+.org-chart-children > .org-chart-node:last-child:not(:only-child)::after {
+  left: 0;
+  width: 50%;
 }
