@@ -33,7 +33,10 @@ export default function TurnstileWidget({ siteKey, onToken }: TurnstileWidgetPro
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const onTokenRef = useRef(onToken);
-  onTokenRef.current = onToken;
+
+  useEffect(() => {
+    onTokenRef.current = onToken;
+  });
 
   useEffect(() => {
     if (!siteKey || !containerRef.current) return;

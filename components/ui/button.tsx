@@ -1,3 +1,5 @@
+'use client'
+
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
 
@@ -18,6 +20,10 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40',
         link: 'text-primary underline-offset-4 hover:underline',
+        accent: 'bg-accent text-accent-foreground hover:bg-accent/90 font-bold',
+        brand: 'bg-brand-800 text-white hover:bg-brand-700 font-bold',
+        'outline-inverse':
+          'border-white/30 bg-transparent text-white hover:bg-white/10 font-medium',
       },
       size: {
         default:
@@ -49,7 +55,7 @@ function Button({
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     />
   )

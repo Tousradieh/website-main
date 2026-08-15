@@ -1,25 +1,24 @@
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import ServicesGrid from '@/components/ServicesGrid';
 import TeamPreview from '@/components/TeamPreview';
 import CertificatesPreview from '@/components/CertificatesPreview';
+import ProjectStatusBadge from '@/components/ProjectStatusBadge';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { projects } from '@/lib/data';
+import { CONTACT } from '@/lib/constants';
 import { ArrowLeft } from 'lucide-react';
 
 export default function HomePage() {
   const featured = projects.slice(0, 2);
 
   return (
-    <main>
-      <Navbar />
+    <>
       <HeroSection />
 
       <ServicesGrid />
 
-      {/* Featured Projects */}
       <section className="py-20 md:py-28 bg-brand-900" aria-labelledby="projects-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
@@ -59,16 +58,8 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-brand-900/50 group-hover:bg-brand-900/40 transition-colors" />
                 <div className="absolute bottom-0 right-0 left-0 p-6">
-                  <span
-                    className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mb-2 ${
-                      project.status === 'active'
-                        ? 'bg-green-500/20 text-green-300'
-                        : 'bg-accent/20 text-accent'
-                    }`}
-                  >
-                    {project.status === 'active' ? 'در حال اجرا' : 'تکمیل‌شده'}
-                  </span>
-                  <h3 className="text-white font-heading font-bold text-xl text-balance">
+                  <ProjectStatusBadge status={project.status} tone="onDark" />
+                  <h3 className="text-white font-heading font-bold text-xl text-balance mt-2">
                     {project.title}
                   </h3>
                   <p className="text-brand-100/70 text-sm mt-1">{project.location}</p>
@@ -81,7 +72,6 @@ export default function HomePage() {
 
       <CertificatesPreview />
 
-      {/* Why Choose Us */}
       <section className="py-20 md:py-28 bg-background" aria-labelledby="why-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -129,7 +119,6 @@ export default function HomePage() {
 
       <TeamPreview />
 
-      {/* CTA Banner */}
       <section className="relative py-20 bg-brand-800 overflow-hidden" aria-label="فراخوان عمل">
         <div className="absolute inset-0 opacity-5">
           <Image
@@ -148,23 +137,25 @@ export default function HomePage() {
             با کارشناسان فروش توس‌رادیه تماس بگیرید و مشاوره رایگان دریافت کنید.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              href="/materials"
-              className="px-8 py-3.5 rounded-md bg-accent text-accent-foreground font-bold hover:bg-accent/90 transition-colors"
+            <Button
+              nativeButton={false}
+              render={<Link href="/materials" />}
+              variant="accent"
+              className="h-auto px-8 py-3.5 rounded-md"
             >
               درخواست مصالح
-            </Link>
-            <a
-              href="tel:051-36082788"
-              className="px-8 py-3.5 rounded-md border border-white/30 text-white font-medium hover:bg-white/10 transition-colors"
+            </Button>
+            <Button
+              nativeButton={false}
+              render={<a href={`tel:${CONTACT.phoneTel}`} />}
+              variant="outline-inverse"
+              className="h-auto px-8 py-3.5 rounded-md"
             >
               تماس با ما
-            </a>
+            </Button>
           </div>
         </div>
       </section>
-
-      <Footer />
-    </main>
+    </>
   );
 }

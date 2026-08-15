@@ -21,7 +21,18 @@ const BALE_API_BASE = 'https://tapi.bale.ai';
 const TURNSTILE_VERIFY_URL =
   'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
-const materialTypeLabels: Record<string, string> = {
+/** Keep keys/labels in sync with website-main/lib/leads.ts MATERIAL_TYPES */
+type MaterialType =
+  | 'machinery'
+  | 'asphalt-hot'
+  | 'asphalt-cold'
+  | 'crushed-mountain'
+  | 'crushed-river'
+  | 'gravel-pea'
+  | 'crushed-sand'
+  | 'other';
+
+const materialTypeLabels: Record<MaterialType, string> = {
   machinery: 'ماشین‌آلات و تجهیزات',
   'asphalt-hot': 'آسفالت گرم',
   'asphalt-cold': 'آسفالت سرد',
@@ -77,8 +88,8 @@ function formatLeadMessage(
     >
   > & { message?: string }
 ): string {
-  const material =
-    materialTypeLabels[lead.materialType] ?? lead.materialType;
+  const materialKey = lead.materialType as MaterialType;
+  const material = materialTypeLabels[materialKey] ?? lead.materialType;
 
   const lines = [
     '📦 درخواست جدید تأمین مصالح',

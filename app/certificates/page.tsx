@@ -1,26 +1,23 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import PageHeader from '@/components/PageHeader';
 import { certificates } from '@/lib/data';
+
+export const metadata: Metadata = {
+  title: 'گواهی‌نامه‌ها',
+  description:
+    'مجموعه گواهی‌ها و تقدیرنامه‌های دریافتی توس‌رادیه از کارفرمایان و مراجع معتبر.',
+};
 
 export default function CertificatesPage() {
   return (
-    <main>
-      <Navbar />
-
-      <section className="pt-32 pb-16 bg-brand-900" aria-label="سربرگ صفحه گواهی‌نامه‌ها">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-brand-100 text-sm font-medium mb-4">
-            اعتبار حرفه‌ای
-          </span>
-          <h1 className="text-white font-heading font-black text-4xl md:text-5xl text-balance mb-4">
-            گواهی‌نامه‌ها و تقدیرنامه‌ها
-          </h1>
-          <p className="text-brand-100/70 text-lg max-w-2xl mx-auto leading-relaxed">
-            مجموعه گواهی‌ها و تقدیرنامه‌های دریافتی توس‌رادیه از کارفرمایان و مراجع معتبر.
-          </p>
-        </div>
-      </section>
+    <>
+      <PageHeader
+        ariaLabel="سربرگ صفحه گواهی‌نامه‌ها"
+        eyebrow="اعتبار حرفه‌ای"
+        title="گواهی‌نامه‌ها و تقدیرنامه‌ها"
+        description="مجموعه گواهی‌ها و تقدیرنامه‌های دریافتی توس‌رادیه از کارفرمایان و مراجع معتبر."
+      />
 
       <section className="py-20 md:py-28 bg-background" aria-labelledby="certificates-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,8 +55,6 @@ export default function CertificatesPage() {
           </ul>
         </div>
       </section>
-
-      <Footer />
-    </main>
+    </>
   );
 }

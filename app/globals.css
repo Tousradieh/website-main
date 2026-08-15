@@ -29,6 +29,11 @@
 
   --color-gold: oklch(0.72 0.12 85);
 
+  --color-success: oklch(0.53 0.15 145);
+  --color-success-foreground: oklch(0.88 0.08 145);
+  --color-success-muted: oklch(0.95 0.04 145);
+  --color-success-emphasis: oklch(0.72 0.19 145);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);

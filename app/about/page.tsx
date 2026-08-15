@@ -1,6 +1,6 @@
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import type { Metadata } from 'next';
 import OrgChart from '@/components/OrgChart';
+import PageHeader from '@/components/PageHeader';
 import { organizationInfo, csrInitiatives } from '@/lib/data';
 import type { CsrInitiative } from '@/lib/types';
 import {
@@ -18,26 +18,23 @@ const csrIcons: Record<CsrInitiative['icon'], LucideIcon> = {
   education: GraduationCap,
 };
 
+export const metadata: Metadata = {
+  title: 'درباره ما',
+  description:
+    'تاریخچه، مأموریت، چشم‌انداز، ساختار سازمانی و مسئولیت اجتماعی توس‌رادیه.',
+};
+
 export default function AboutPage() {
   const { history, mission, missionPillars, vision, visionPillars } = organizationInfo;
 
   return (
-    <main>
-      <Navbar />
-
-      <section className="pt-32 pb-16 bg-brand-900" aria-label="سربرگ صفحه درباره ما">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-brand-100 text-sm font-medium mb-4">
-            اطلاعات سازمان
-          </span>
-          <h1 className="text-white font-heading font-black text-4xl md:text-5xl text-balance mb-4">
-            درباره ما
-          </h1>
-          <p className="text-brand-100/70 text-lg max-w-2xl mx-auto leading-relaxed">
-            تاریخچه، مأموریت، چشم‌انداز، ساختار سازمانی و مسئولیت اجتماعی توس‌رادیه.
-          </p>
-        </div>
-      </section>
+    <>
+      <PageHeader
+        ariaLabel="سربرگ صفحه درباره ما"
+        eyebrow="اطلاعات سازمان"
+        title="درباره ما"
+        description="تاریخچه، مأموریت، چشم‌انداز، ساختار سازمانی و مسئولیت اجتماعی توس‌رادیه."
+      />
 
       <section
         id="history"
@@ -59,9 +56,9 @@ export default function AboutPage() {
             </div>
 
             <div className="flex flex-col gap-6">
-              {history.map((paragraph) => (
+              {history.map((paragraph, index) => (
                 <p
-                  key={paragraph.slice(0, 24)}
+                  key={`history-${index}`}
                   className="text-muted-foreground leading-relaxed text-base md:text-lg"
                 >
                   {paragraph}
@@ -197,8 +194,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      <Footer />
-    </main>
+    </>
   );
 }

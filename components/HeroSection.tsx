@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { stats } from '@/lib/data';
+import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 export default function HeroSection() {
@@ -43,19 +44,23 @@ export default function HeroSection() {
         </p>
 
         <div className="flex flex-wrap gap-4">
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-accent text-accent-foreground font-bold text-base hover:bg-accent/90 transition-colors"
+          <Button
+            nativeButton={false}
+            render={<Link href="/projects" />}
+            variant="accent"
+            className="h-auto gap-2 px-6 py-3 rounded-md text-base"
           >
             مشاهده پروژه‌ها
             <ArrowLeft size={18} className="rtl-flip" />
-          </Link>
-          <Link
-            href="/materials"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-white/30 text-white font-medium text-base hover:bg-white/10 transition-colors"
+          </Button>
+          <Button
+            nativeButton={false}
+            render={<Link href="/materials" />}
+            variant="outline-inverse"
+            className="h-auto gap-2 px-6 py-3 rounded-md text-base"
           >
             درخواست مصالح
-          </Link>
+          </Button>
         </div>
 
         {/* Stats bar */}
