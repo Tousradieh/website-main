@@ -2,12 +2,12 @@ import HeroSection from '@/components/HeroSection';
 import ServicesGrid from '@/components/ServicesGrid';
 import TeamPreview from '@/components/TeamPreview';
 import CertificatesPreview from '@/components/CertificatesPreview';
+import ClientsStrip from '@/components/ClientsStrip';
 import ProjectStatusBadge from '@/components/ProjectStatusBadge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { projects } from '@/lib/data';
-import { CONTACT } from '@/lib/constants';
 import { ArrowLeft } from 'lucide-react';
 
 export default function HomePage() {
@@ -46,7 +46,7 @@ export default function HomePage() {
             {featured.map((project) => (
               <Link
                 key={project.id}
-                href="/projects"
+                href={`/projects/${project.id}`}
                 className="group relative rounded-xl overflow-hidden h-72 md:h-80 block"
               >
                 <Image
@@ -71,6 +71,8 @@ export default function HomePage() {
       </section>
 
       <CertificatesPreview />
+
+      <ClientsStrip />
 
       <section className="py-20 md:py-28 bg-background" aria-labelledby="why-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -147,7 +149,7 @@ export default function HomePage() {
             </Button>
             <Button
               nativeButton={false}
-              render={<a href={`tel:${CONTACT.phoneTel}`} />}
+              render={<Link href="/contact" />}
               variant="outline-inverse"
               className="h-auto px-8 py-3.5 rounded-md"
             >

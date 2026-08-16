@@ -1,22 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 import { projects } from '@/lib/data';
 import { PROJECT_FILTERS, type ProjectFilter } from '@/lib/constants';
-import type { Project } from '@/lib/types';
 import ProjectStatusBadge from '@/components/ProjectStatusBadge';
-import { MapPin, Calendar, Tag } from 'lucide-react';
+import { MapPin, Calendar, Tag, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const ProjectModal = dynamic(() => import('@/components/ProjectModal'), {
-  ssr: false,
-});
 
 export default function ProjectGallery() {
   const [filter, setFilter] = useState<ProjectFilter>('all');
-  const [selected, setSelected] = useState<Project | null>(null);
 
   const filtered =
     filter === 'all' ? projects : projects.filter((project) => project.status === filter);
@@ -55,11 +49,10 @@ export default function ProjectGallery() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filtered.map((project) => (
-                <button
+                <Link
                   key={project.id}
-                  type="button"
+                  href={`/projects/${project.id}`}
                   className="group bg-card rounded-xl border border-border overflow-hidden hover:border-brand-400 hover:shadow-xl transition-all duration-300 text-right w-full"
-                  onClick={() => setSelected(project)}
                   aria-label={`مشاهده جزئیات: ${project.title}`}
                 >
                   <div className="relative h-52 overflow-hidden bg-brand-900">
@@ -110,20 +103,17 @@ export default function ProjectGallery() {
                   </div>
 
                   <div className="px-6 pb-5 border-t border-border pt-4">
-                    <span className="text-sm font-medium text-accent group-hover:underline">
-                      {'مشاهده جزئیات و گالری تصاویر ←'}
+                    <span className="inline-flex items-center gap-2 text-sm font-medium text-accent group-hover:underline">
+                      مشاهده جزئیات و گالری تصاویر
+                      <ArrowLeft size={14} className="rtl-flip" />
                     </span>
                   </div>
-                </button>
+                </Link>
               ))}
             </div>
           )}
         </div>
       </section>
-
-      {selected ? (
-        <ProjectModal project={selected} onClose={() => setSelected(null)} />
-      ) : null}
     </>
   );
 }

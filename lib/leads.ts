@@ -3,6 +3,8 @@
  * Material-type keys/labels must stay in sync with workers/leads/src/index.ts.
  */
 
+import { isIranianPhone } from './phone';
+
 export const MATERIAL_TYPES = [
   { value: 'machinery', label: 'ماشین‌آلات و تجهیزات' },
   { value: 'asphalt-hot', label: 'آسفالت گرم' },
@@ -45,6 +47,7 @@ export const LEAD_VALIDATION_MESSAGES = {
   companyName: 'نام شرکت الزامی است',
   contactPerson: 'نام مسئول الزامی است',
   phone: 'شماره تماس الزامی است',
+  phoneInvalid: 'شماره تماس معتبر نیست',
   materialType: 'نوع مصالح را انتخاب کنید',
   quantity: 'میزان نیاز را وارد کنید',
 } as const;
@@ -61,7 +64,11 @@ export function validateLeadForm(form: LeadFormData): Partial<Record<keyof LeadF
   const errors: Partial<Record<keyof LeadFormData, string>> = {};
   if (!form.companyName.trim()) errors.companyName = LEAD_VALIDATION_MESSAGES.companyName;
   if (!form.contactPerson.trim()) errors.contactPerson = LEAD_VALIDATION_MESSAGES.contactPerson;
-  if (!form.phone.trim()) errors.phone = LEAD_VALIDATION_MESSAGES.phone;
+  if (!form.phone.trim()) {
+    errors.phone = LEAD_VALIDATION_MESSAGES.phone;
+  } else if (!isIranianPhone(form.phone)) {
+    errors.phone = LEAD_VALIDATION_MESSAGES.phoneInvalid;
+  }
   if (!form.materialType) errors.materialType = LEAD_VALIDATION_MESSAGES.materialType;
   if (!form.quantity.trim()) errors.quantity = LEAD_VALIDATION_MESSAGES.quantity;
   return errors;

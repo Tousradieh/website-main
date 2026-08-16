@@ -18,7 +18,15 @@ export const navItems: NavItem[] = [
   { label: 'مصالح و توانمندی‌ها', href: '/materials' },
   { label: 'گواهی‌نامه‌ها', href: '/certificates' },
   { label: 'موقعیت‌های شغلی', href: '/careers' },
+  { label: 'تماس با ما', href: '/contact' },
 ];
+
+export const clients = [
+  { id: 'rmto', name: 'سازمان راهداری و حمل‌ونقل جاده‌ای' },
+  { id: 'mashhad', name: 'شهرداری مشهد' },
+  { id: 'kurdistan', name: 'اداره‌کل راه و شهرسازی کردستان' },
+  { id: 'isfahan', name: 'سازمان راهداری استان اصفهان' },
+] as const;
 
 /** In-page sections for the About dropdown in the navbar. */
 export const aboutNavSections: NavItem[] = [
@@ -392,6 +400,10 @@ export const csrInitiatives: CsrInitiative[] = [
     icon: 'education',
   },
 ];
+
+export function getProjectById(id: string): Project | undefined {
+  return projects.find((project) => project.id === id);
+}
 
 export const certificates: Certificate[] = [
   {

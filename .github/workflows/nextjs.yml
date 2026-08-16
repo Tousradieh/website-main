@@ -78,6 +78,7 @@ jobs:
           # Cloudflare Worker URL for materials leads (set in repo Secrets)
           NEXT_PUBLIC_LEADS_API_URL: ${{ secrets.NEXT_PUBLIC_LEADS_API_URL }}
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://tousradieh.com' }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

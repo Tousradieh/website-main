@@ -1,6 +1,7 @@
 interface Env {
   BALE_BOT_TOKEN: string;
   BALE_PROCUREMENT_CHAT_ID: string;
+  BALE_SALES_CHAT_ID?: string;
   TURNSTILE_SECRET: string;
   ALLOWED_ORIGIN?: string;
 }
@@ -11,6 +12,7 @@ interface LeadBody {
   phone?: string;
   materialType?: string;
   quantity?: string;
+  topic?: string;
   message?: string;
   recipient?: string;
   turnstileToken?: string;
@@ -20,6 +22,8 @@ interface LeadBody {
 const BALE_API_BASE = 'https://tapi.bale.ai';
 const TURNSTILE_VERIFY_URL =
   'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+
+type Recipient = 'procurement' | 'sales';
 
 /** Keep keys/labels in sync with website-main/lib/leads.ts MATERIAL_TYPES */
 type MaterialType =
@@ -40,6 +44,16 @@ const materialTypeLabels: Record<MaterialType, string> = {
   'crushed-river': 'مصالح رودخانه‌ای',
   'gravel-pea': 'گراویه و نخودری',
   'crushed-sand': 'ماسه شکسته',
+  other: 'سایر',
+};
+
+/** Keep keys/labels in sync with website-main/lib/contact.ts CONTACT_TOPICS */
+type ContactTopic = 'project' | 'tender' | 'materials' | 'other';
+
+const contactTopicLabels: Record<ContactTopic, string> = {
+  project: 'استعلام پروژه',
+  tender: 'مناقصه و همکاری',
+  materials: 'خرید مصالح',
   other: 'سایر',
 };
 
@@ -71,16 +85,45 @@ function json(env: Env, request: Request, body: unknown, status = 200): Response
   });
 }
 
-function validateLead(body: LeadBody): string | null {
+/** Keep in sync with website-main/lib/phone.ts */
+function isIranianPhone(value: string): boolean {
+  let digits = value.replace(/[^\d+]/g, '');
+  digits = digits.replace(/^(?:\+|00)/, '');
+  if (digits.startsWith('98')) {
+    digits = digits.slice(2);
+  }
+  if (!digits.startsWith('0')) {
+    digits = `0${digits}`;
+  }
+  return /^0\d{10}$/.test(digits);
+}
+
+function validatePhone(phone: string | undefined): string | null {
+  if (!phone?.trim()) return 'شماره تماس الزامی است';
+  if (!isIranianPhone(phone)) return 'شماره تماس معتبر نیست';
+  return null;
+}
+
+function validateProcurement(body: LeadBody): string | null {
   if (!body.companyName?.trim()) return 'نام شرکت الزامی است';
   if (!body.contactPerson?.trim()) return 'نام مسئول الزامی است';
-  if (!body.phone?.trim()) return 'شماره تماس الزامی است';
+  const phoneError = validatePhone(body.phone);
+  if (phoneError) return phoneError;
   if (!body.materialType?.trim()) return 'نوع مصالح الزامی است';
   if (!body.quantity?.trim()) return 'میزان نیاز الزامی است';
   return null;
 }
 
-function formatLeadMessage(
+function validateSales(body: LeadBody): string | null {
+  if (!body.contactPerson?.trim()) return 'نام الزامی است';
+  const phoneError = validatePhone(body.phone);
+  if (phoneError) return phoneError;
+  if (!body.topic?.trim()) return 'موضوع الزامی است';
+  if (!body.message?.trim()) return 'متن پیام الزامی است';
+  return null;
+}
+
+function formatProcurementMessage(
   lead: Required<
     Pick<
       LeadBody,
@@ -105,6 +148,30 @@ function formatLeadMessage(
   if (message) {
     lines.push('', `توضیحات: ${message}`);
   }
+
+  return lines.join('\n');
+}
+
+function formatSalesMessage(
+  lead: Required<Pick<LeadBody, 'contactPerson' | 'phone' | 'topic' | 'message'>> & {
+    companyName?: string;
+  }
+): string {
+  const topicKey = lead.topic as ContactTopic;
+  const topic = contactTopicLabels[topicKey] ?? lead.topic;
+  const company = lead.companyName?.trim();
+
+  const lines = [
+    '📩 پیام جدید از صفحه تماس',
+    '',
+    `نام: ${lead.contactPerson}`,
+  ];
+
+  if (company) {
+    lines.push(`شرکت: ${company}`);
+  }
+
+  lines.push(`تلفن: ${lead.phone}`, `موضوع: ${topic}`, '', `پیام: ${lead.message}`);
 
   return lines.join('\n');
 }
@@ -138,6 +205,7 @@ async function verifyTurnstile(
 
 async function sendBaleMessage(
   env: Env,
+  chatId: string,
   text: string
 ): Promise<{ ok: boolean; status: number }> {
   const url = `${BALE_API_BASE}/bot${env.BALE_BOT_TOKEN}/sendMessage`;
@@ -145,7 +213,7 @@ async function sendBaleMessage(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      chat_id: env.BALE_PROCUREMENT_CHAT_ID,
+      chat_id: chatId,
       text,
     }),
   });
@@ -158,6 +226,13 @@ async function sendBaleMessage(
   }
 
   return { ok: res.ok && Boolean(data?.ok), status: res.status };
+}
+
+function chatIdFor(env: Env, recipient: Recipient): string {
+  if (recipient === 'sales' && env.BALE_SALES_CHAT_ID?.trim()) {
+    return env.BALE_SALES_CHAT_ID.trim();
+  }
+  return env.BALE_PROCUREMENT_CHAT_ID;
 }
 
 export default {
@@ -215,27 +290,37 @@ export default {
       );
     }
 
-    const recipient = body.recipient ?? 'procurement';
-    if (recipient !== 'procurement') {
+    const recipient = (body.recipient ?? 'procurement') as Recipient;
+    if (recipient !== 'procurement' && recipient !== 'sales') {
       return json(env, request, { ok: false, error: 'گیرنده نامعتبر است' }, 400);
     }
 
-    const validationError = validateLead(body);
+    const validationError =
+      recipient === 'sales' ? validateSales(body) : validateProcurement(body);
     if (validationError) {
       return json(env, request, { ok: false, error: validationError }, 400);
     }
 
-    const text = formatLeadMessage({
-      companyName: body.companyName!.trim(),
-      contactPerson: body.contactPerson!.trim(),
-      phone: body.phone!.trim(),
-      materialType: body.materialType!.trim(),
-      quantity: body.quantity!.trim(),
-      message: body.message?.trim() ?? '',
-    });
+    const text =
+      recipient === 'sales'
+        ? formatSalesMessage({
+            contactPerson: body.contactPerson!.trim(),
+            phone: body.phone!.trim(),
+            topic: body.topic!.trim(),
+            message: body.message!.trim(),
+            companyName: body.companyName?.trim() ?? '',
+          })
+        : formatProcurementMessage({
+            companyName: body.companyName!.trim(),
+            contactPerson: body.contactPerson!.trim(),
+            phone: body.phone!.trim(),
+            materialType: body.materialType!.trim(),
+            quantity: body.quantity!.trim(),
+            message: body.message?.trim() ?? '',
+          });
 
     try {
-      const result = await sendBaleMessage(env, text);
+      const result = await sendBaleMessage(env, chatIdFor(env, recipient), text);
       if (!result.ok) {
         console.error('Bale sendMessage failed', result.status);
         return json(

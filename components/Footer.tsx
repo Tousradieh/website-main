@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { navItems, services } from '@/lib/data';
-import { CONTACT, SITE_NAME } from '@/lib/constants';
+import { CONTACT, SITE_NAME, CHAT_LINKS } from '@/lib/constants';
 import Logo from '@/components/Logo';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -37,6 +37,10 @@ export default function Footer() {
                 <MapPin size={16} className="text-accent flex-shrink-0 mt-0.5" />
                 <span>{CONTACT.address}</span>
               </span>
+              <span className="flex items-start gap-3">
+                <Clock size={16} className="text-accent flex-shrink-0 mt-0.5" />
+                <span>{CONTACT.hours}</span>
+              </span>
             </div>
           </div>
 
@@ -60,8 +64,13 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">خدمات ما</h3>
             <ul className="flex flex-col gap-2">
               {services.map((service) => (
-                <li key={service.id} className="text-sm text-brand-100/80">
-                  {service.title}
+                <li key={service.id}>
+                  <Link
+                    href="/#services"
+                    className="text-sm text-brand-100/80 hover:text-white transition-colors"
+                  >
+                    {service.title}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -70,6 +79,20 @@ export default function Footer() {
 
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-brand-100/50">
           <span>© {new Date().getFullYear()} {SITE_NAME}. تمامی حقوق محفوظ است.</span>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {CHAT_LINKS.map((link) => (
+              <a
+                key={link.id}
+                href={link.href}
+                className="hover:text-white transition-colors"
+                {...(link.href.startsWith('http')
+                  ? { target: '_blank', rel: 'noopener noreferrer' }
+                  : {})}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

@@ -2,7 +2,7 @@ import { services } from '@/lib/data';
 
 export default function ServicesGrid() {
   return (
-    <section className="py-20 md:py-28 bg-background" aria-labelledby="services-heading">
+    <section id="services" className="scroll-mt-24 py-20 md:py-28 bg-background" aria-labelledby="services-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">

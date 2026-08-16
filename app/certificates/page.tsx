@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import PageHeader from '@/components/PageHeader';
-import { certificates } from '@/lib/data';
+import CertificateList from '@/components/CertificateList';
 
 export const metadata: Metadata = {
   title: 'گواهی‌نامه‌ها',
@@ -25,34 +24,7 @@ export default function CertificatesPage() {
             فهرست گواهی‌نامه‌ها
           </h2>
 
-          <ul className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-2 lg:gap-y-0">
-            {certificates.map((cert) => (
-              <li
-                key={cert.id}
-                className="flex flex-col sm:flex-row gap-5 sm:gap-6 py-8 border-b border-border"
-              >
-                <div className="relative w-24 h-32 flex-shrink-0 self-start bg-brand-50">
-                  <Image
-                    src={cert.image}
-                    alt={cert.title}
-                    fill
-                    className="object-contain p-1"
-                    sizes="96px"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-heading font-bold text-brand-900 text-xl mb-1 text-balance">
-                    {cert.title}
-                  </h3>
-                  <p className="text-brand-600 text-sm mb-3">
-                    {cert.issuer}
-                    {cert.year ? ` — ${cert.year}` : ''}
-                  </p>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{cert.description}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <CertificateList />
         </div>
       </section>
     </>

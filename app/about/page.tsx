@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import OrgChart from '@/components/OrgChart';
 import PageHeader from '@/components/PageHeader';
+import ClientsStrip from '@/components/ClientsStrip';
 import { organizationInfo, csrInitiatives } from '@/lib/data';
 import type { CsrInitiative } from '@/lib/types';
 import {
@@ -68,6 +69,8 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <ClientsStrip />
 
       <section
         id="mission-vision"

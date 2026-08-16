@@ -1,17 +1,12 @@
 'use client';
 
 import TurnstileWidget from '@/components/TurnstileWidget';
+import FormPrivacyNote from '@/components/FormPrivacyNote';
 import { Button } from '@/components/ui/button';
 import { useLeadForm } from '@/hooks/useLeadForm';
 import { MATERIAL_TYPES } from '@/lib/leads';
-import { cn } from '@/lib/utils';
+import { formFieldClass } from '@/lib/form-ui';
 import { CheckCircle, Loader2 } from 'lucide-react';
-
-const fieldClass = (invalid: boolean) =>
-  cn(
-    'px-4 py-2.5 rounded-md border bg-background text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20',
-    invalid ? 'border-destructive' : 'border-input',
-  );
 
 export default function LeadInquiryForm() {
   const {
@@ -83,7 +78,7 @@ export default function LeadInquiryForm() {
                   value={form.companyName}
                   onChange={handleChange}
                   placeholder="شرکت مهندسی ..."
-                  className={fieldClass(!!errors.companyName)}
+                  className={formFieldClass(!!errors.companyName)}
                   aria-describedby={errors.companyName ? 'companyName-error' : undefined}
                   aria-invalid={!!errors.companyName}
                 />
@@ -105,7 +100,7 @@ export default function LeadInquiryForm() {
                   value={form.contactPerson}
                   onChange={handleChange}
                   placeholder="نام و نام خانوادگی"
-                  className={fieldClass(!!errors.contactPerson)}
+                  className={formFieldClass(!!errors.contactPerson)}
                   aria-describedby={errors.contactPerson ? 'contactPerson-error' : undefined}
                   aria-invalid={!!errors.contactPerson}
                 />
@@ -128,7 +123,7 @@ export default function LeadInquiryForm() {
                   onChange={handleChange}
                   placeholder="۰۹۱۲..."
                   dir="ltr"
-                  className={fieldClass(!!errors.phone)}
+                  className={formFieldClass(!!errors.phone)}
                   aria-describedby={errors.phone ? 'phone-error' : undefined}
                   aria-invalid={!!errors.phone}
                 />
@@ -148,7 +143,7 @@ export default function LeadInquiryForm() {
                   name="materialType"
                   value={form.materialType}
                   onChange={handleChange}
-                  className={fieldClass(!!errors.materialType)}
+                  className={formFieldClass(!!errors.materialType)}
                   aria-describedby={errors.materialType ? 'materialType-error' : undefined}
                   aria-invalid={!!errors.materialType}
                 >
@@ -177,7 +172,7 @@ export default function LeadInquiryForm() {
                   value={form.quantity}
                   onChange={handleChange}
                   placeholder="مثال: ۵۰۰ تن"
-                  className={fieldClass(!!errors.quantity)}
+                  className={formFieldClass(!!errors.quantity)}
                   aria-describedby={errors.quantity ? 'quantity-error' : undefined}
                   aria-invalid={!!errors.quantity}
                 />
@@ -222,6 +217,8 @@ export default function LeadInquiryForm() {
                 {submitError}
               </p>
             ) : null}
+
+            <FormPrivacyNote />
 
             <Button
               type="submit"
