@@ -20,8 +20,8 @@ export const CONTACT = {
   hours: 'شنبه تا چهارشنبه ۸:۰۰ تا ۱۶:۳۰ — پنجشنبه ۸:۰۰ تا ۱۳:۰۰',
   hoursSchema: ['Sa-We 08:00-16:30', 'Th 08:00-13:00'],
   map: {
-    lat: 36.3268,
-    lng: 59.5472,
+    lat: 36.325498,
+    lng: 59.544944,
     zoom: 16,
   },
 } as const;
