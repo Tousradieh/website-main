@@ -35,7 +35,16 @@ export default function ProjectMedia({ project }: ProjectMediaProps) {
   return (
     <div>
       <div className="relative h-64 sm:h-80 md:h-[28rem] bg-brand-900 rounded-2xl overflow-hidden">
-        {active.type === 'video' ? (
+        {active.type === 'video' && active.videoType === 'aparat' ? (
+          <iframe
+            key={active.embedSrc}
+            src={active.embedSrc}
+            title={`${project.title} – ویدیو ${activeIndex + 1}`}
+            allowFullScreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            className="absolute inset-0 w-full h-full border-0"
+          />
+        ) : active.type === 'video' ? (
           <video
             key={active.src}
             src={active.src}

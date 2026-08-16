@@ -10,12 +10,17 @@ export interface Service {
   description: string;
 }
 
+/** How a gallery video is played: Aparat iframe vs a direct file URL. */
+export type VideoType = 'aparat' | 'url';
+
 /** Image path, or an explicit media object (videos / optional poster). */
 export type GalleryItem =
   | string
+  | { src: string; type: 'image' }
   | {
       src: string;
-      type: 'image' | 'video';
+      type: 'video';
+      videoType: VideoType;
       /** Poster frame for videos (thumbs + before play). */
       poster?: string;
     };
