@@ -1,6 +1,8 @@
 // Usage: with a fresh local DB (npm run db:migrate:local && npm run db:seed:local) and
 // `npx wrangler dev --port 8787 --var CAMPAIGN_START:2026-06-01` running with the .dev.vars
 // from README.md, run `node scripts/e2e.mjs`. It creates test units/personnel in that DB.
+import { readFileSync } from 'node:fs';
+
 const API = 'http://localhost:8787';
 const ADMIN = 'dev-admin-token-0123456789';
 let failures = 0;
@@ -206,6 +208,23 @@ await call(`/api/activities/${act.id}/claim`, { token: tA, body: { note: 'دید
 check('other-site manager cannot approve claim', (await call('/api/team/claims/review', { token: tOld, body: { employeeCode: '2001', activityId: act.id, approve: true } })).status === 404);
 check('manager approves claim', (await call('/api/team/claims/review', { token: tM, body: { employeeCode: '2001', activityId: act.id, approve: true } })).status === 200);
 
+
+
+// ---------- imports without a PIN column (sample-data files as shipped) ----------
+const sampleDir = new URL('../sample-data/', import.meta.url);
+r = await admin('/api/admin/employees', { text: readFileSync(new URL('personnel.csv', sampleDir), 'utf8') });
+check('sample personnel.csv imports without PINs', r.data.imported === 24 && r.data.errors.length === 0 && r.data.pins.length === 24, r.data);
+const sample = r.data.pins.find((p) => p.code === '9001');
+check('generated sample PIN logs in', /^\d{6}$/.test(sample.pin) && (await login('9001', sample.pin)).status === 200);
+r = await call('/api/admin/employees', { token: ADMIN });
+const s9001 = r.data.employees.find((x) => x.code === '9001');
+check('format without PIN keeps unit + manager', s9001.department === 'plants' && s9001.isManager === 1, s9001);
+r = await admin('/api/admin/employees', { text: '9001,سرپرست نمونه گلبهار,golbahar,plants,مدیر' });
+check('re-import existing keeps PIN (no new pins)', r.data.pins.length === 0 && (await login('9001', sample.pin)).status === 200);
+r = await admin('/api/admin/employees', { text: '5001,نفر بی‌رمز,site-a,,hr' });
+check('blank PIN for new person creates + generates', r.data.imported === 1 && r.data.pins.length === 1 && (await login('5001', r.data.pins[0].pin)).status === 200, r.data);
+r = await admin('/api/admin/missions', { text: readFileSync(new URL('missions.csv', sampleDir), 'utf8') });
+check('sample missions.csv imports', r.data.imported === 12 && r.data.errors.length === 0, r.data);
 
 // ---------- admin CRUD tables ----------
 check('team save bad id 400', (await admin('/api/admin/teams/save', { id: 'Bad Id', name: 'x' })).status === 400);

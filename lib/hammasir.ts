@@ -400,6 +400,7 @@ export interface AdminOverview {
 export interface ImportResult {
   imported: number;
   errors: string[];
+  pins?: { code: string; name: string; pin: string }[];
 }
 
 export type ApiResult<T> = ({ ok: true } & T) | { ok: false; error: string; status: number };

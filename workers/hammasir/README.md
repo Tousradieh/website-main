@@ -107,7 +107,7 @@ their points and submissions. CSV imports below remain for bulk loads.
 | Import | Columns |
 | --- | --- |
 | Units / sites | `id, name` — id is lowercase latin, digits, `-`; e.g. `golbahar, مجتمع گلبهار` |
-| Personnel | `code, name, team_id, pin, department, manager` — PIN 6–8 digits, blank keeps the existing one; department is one of `technical, plants, machinery, finance, sales, hr, rnd, strategy` (blank = shared tracks only); manager column `مدیر` (or `1`) for managers/supervisors |
+| Personnel | `code, name, team_id, pin, department, manager` (the PIN column may be left out entirely) — PIN 6–8 digits; blank keeps an existing person's PIN and generates one for a new person (shown once in the import box with a CSV download); department is one of `technical, plants, machinery, finance, sales, hr, rnd, strategy` (blank = shared tracks only); manager column `مدیر` (or `1`) for managers/supervisors |
 | Mission points | `target, week, points, note` — target is a personnel code or `team:<id>` for the whole unit; negative points correct a mistake |
 
 Setting a new PIN signs that person out everywhere. Courses/classes and weekly quizzes
