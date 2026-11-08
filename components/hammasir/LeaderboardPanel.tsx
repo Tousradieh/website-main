@@ -8,8 +8,17 @@ import PanelState from './PanelState';
 
 const PODIUM = ['bg-gold text-brand-900', 'bg-grey-300 text-grey-900', 'bg-[#c58b5a] text-white'];
 
-export default function LeaderboardPanel() {
-  const { data, error, reload } = useHammasirData<{ teams: TeamStanding[] }>('/api/leaderboard');
+interface LeaderboardPanelProps {
+  token: string;
+  onSessionExpired: () => void;
+}
+
+export default function LeaderboardPanel({ token, onSessionExpired }: LeaderboardPanelProps) {
+  const { data, error, reload } = useHammasirData<{ teams: TeamStanding[] }>(
+    '/api/leaderboard',
+    token,
+    onSessionExpired,
+  );
   if (!data) return <PanelState error={error} onRetry={reload} />;
 
   const { teams } = data;

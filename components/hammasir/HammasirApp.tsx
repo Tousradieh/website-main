@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { BookOpenCheck, LogOut, Trophy, Wallet } from 'lucide-react';
 import { useStoredToken } from '@/hooks/useStoredToken';
 import { cn } from '@/lib/utils';
-import { hammasirApi, sessionToken } from '@/lib/hammasir';
+import { HAMMASIR_APP_ID, hammasirApi, sessionToken } from '@/lib/hammasir';
 import LoginForm from './LoginForm';
 import StatusPanel from './StatusPanel';
 import LearnPanel from './LearnPanel';
@@ -38,7 +38,7 @@ export default function HammasirApp() {
   if (!token) return <LoginForm onSignIn={signIn} />;
 
   return (
-    <div>
+    <div id={HAMMASIR_APP_ID} className="scroll-mt-24">
       <div className="flex items-center gap-2 mb-6">
         <nav
           className="flex-1 grid grid-cols-3 gap-1 rounded-xl bg-card border border-border p-1"
@@ -73,7 +73,7 @@ export default function HammasirApp() {
 
       {tab === 'status' ? <StatusPanel token={token} onSessionExpired={signOut} /> : null}
       {tab === 'learn' ? <LearnPanel token={token} onSessionExpired={signOut} /> : null}
-      {tab === 'league' ? <LeaderboardPanel /> : null}
+      {tab === 'league' ? <LeaderboardPanel token={token} onSessionExpired={signOut} /> : null}
     </div>
   );
 }

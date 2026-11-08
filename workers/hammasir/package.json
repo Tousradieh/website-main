@@ -5,9 +5,11 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "tail": "wrangler tail",
-    "db:init": "wrangler d1 execute hammasir --remote --file=schema.sql",
-    "db:init:local": "wrangler d1 execute hammasir --local --file=schema.sql",
-    "db:seed:local": "wrangler d1 execute hammasir --local --file=seed.sql"
+    "db:seed:local": "wrangler d1 execute hammasir --local --file=seed.sql",
+    "db:migrate": "wrangler d1 migrations apply hammasir --remote",
+    "db:migrate:local": "wrangler d1 migrations apply hammasir --local",
+    "typecheck": "tsc -p .",
+    "check:curriculum": "esbuild scripts/check-curriculum.ts --bundle --platform=node --log-level=warning | node"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260722.1",

@@ -5,7 +5,10 @@
 
 export const HAMMASIR_NAME = 'هم‌مسیر توس';
 
-/** Keep in sync with workers/hammasir/src/index.ts CAMPAIGN_WEEKS */
+/** DOM id of the app container, used to scroll back to it after in-app navigation. */
+export const HAMMASIR_APP_ID = 'hammasir-app';
+
+/** Keep in sync with workers/hammasir/src/http.ts CAMPAIGN_WEEKS */
 export const CAMPAIGN_WEEKS = 13;
 
 export const CAMPAIGN_PHASES = [
@@ -44,8 +47,23 @@ export interface MissionEntry {
   kind: 'personal' | 'team';
 }
 
+/** Keep keys in sync with workers/hammasir/src/curriculum/types.ts DEPARTMENTS */
+export const DEPARTMENTS = [
+  { value: 'management', label: 'مدیریت و سرپرستی' },
+  { value: 'hr', label: 'منابع انسانی' },
+  { value: 'technical', label: 'فنی و اجرایی' },
+  { value: 'finance', label: 'حسابداری و مالی' },
+  { value: 'sales', label: 'فروش و بازاریابی' },
+] as const;
+
+export type Department = (typeof DEPARTMENTS)[number]['value'];
+
+export function departmentLabel(value: string | null): string {
+  return DEPARTMENTS.find((item) => item.value === value)?.label ?? 'تعیین نشده';
+}
+
 export interface MeResponse {
-  employee: { code: string; name: string; teamId: string; teamName: string };
+  employee: { code: string; name: string; teamId: string; teamName: string; department: Department | null };
   wallet: { knowledge: number; missions: number; total: number };
   missions: MissionEntry[];
   pendingClaims: number;
@@ -115,11 +133,89 @@ export interface PendingClaim {
   createdAt: number;
 }
 
+// ---------- learning tracks ----------
+
+export type TrackIcon = 'compass' | 'briefcase' | 'users' | 'hard-hat' | 'calculator' | 'handshake' | 'sparkles';
+
+export interface TrackSummary {
+  id: string;
+  title: string;
+  audience: 'all' | Department;
+  icon: TrackIcon;
+  description: string;
+  moduleCount: number;
+  maxPoints: number;
+  passedModules: number;
+  capstoneStatus: ClaimStatus | null;
+}
+
+export interface ModuleResult {
+  passed: boolean;
+  firstPoints: number;
+  bestCorrect: number;
+  total: number;
+  attempts: number;
+}
+
+export interface TrackDetail extends Omit<TrackSummary, 'passedModules' | 'capstoneStatus'> {
+  outcomes: string[];
+  sources: string[];
+  modules: {
+    id: string;
+    title: string;
+    week: number;
+    minutes: number;
+    summary: string;
+    open: boolean;
+    result: ModuleResult | null;
+  }[];
+  capstone: {
+    title: string;
+    brief: string;
+    steps: string[];
+    points: number;
+    available: boolean;
+    submission: { status: ClaimStatus; text: string; feedback: string; points: number } | null;
+  };
+}
+
+export interface ModuleDetail {
+  id: string;
+  title: string;
+  week: number;
+  minutes: number;
+  summary: string;
+  sections: { heading: string; paragraphs: string[]; bullets?: string[] }[];
+  keyPoints: string[];
+  action: string;
+  quiz: { q: string; options: string[] }[];
+}
+
+export interface ModuleSubmitResult {
+  result: { correct: number; total: number; passed: boolean; earned: number; firstAttempt: boolean };
+  answers: number[];
+  explanations: string[];
+}
+
+export interface PendingCapstone {
+  employeeCode: string;
+  employeeName: string;
+  teamName: string;
+  trackId: string;
+  trackTitle: string;
+  capstoneTitle: string;
+  text: string;
+  points: number;
+  createdAt: number;
+}
+
 export interface AdminOverview {
-  counts: { employees: number; active: number; attempts: number };
+  counts: { employees: number; active: number; attempts: number; noDepartment: number };
   quizzes: (Omit<QuizSummary, 'open' | 'result'> & { attempts: number })[];
   activities: { id: number; week: number; kind: ActivityKind; title: string; points: number; approved: number }[];
   pendingClaims: PendingClaim[];
+  pendingCapstones: PendingCapstone[];
+  tracks: { id: string; title: string; audience: 'all' | Department; started: number; completed: number }[];
   teams: TeamStanding[];
   units: { id: string; name: string; members: number }[];
   campaign: CampaignStatus;

@@ -8,12 +8,15 @@ import { useStoredToken } from '@/hooks/useStoredToken';
 import {
   activityKind,
   adminToken,
+  DEPARTMENTS,
+  departmentLabel,
   faNumber,
   hammasirApi,
   type AdminOverview,
   type ApiResult,
 } from '@/lib/hammasir';
 import ActivityForm from './ActivityForm';
+import CapstoneReview from './CapstoneReview';
 import ClaimReview from './ClaimReview';
 import ImportBox from './ImportBox';
 import QuizForm from './QuizForm';
@@ -114,11 +117,11 @@ export default function AdminPanel() {
     );
   }
 
-  const { counts, campaign, teams, units, quizzes, activities, pendingClaims } = overview;
+  const { counts, campaign, teams, units, quizzes, activities, pendingClaims, pendingCapstones, tracks } = overview;
   const stats = [
     { label: 'پرسنل ثبت‌شده', value: counts.employees },
     { label: 'پرسنل فعال', value: counts.active },
-    { label: 'کوییزهای پاسخ‌داده‌شده', value: counts.attempts },
+    { label: 'آزمون‌های پاسخ‌داده‌شده', value: counts.attempts },
     { label: 'هفته کمپین', value: campaign.week },
   ];
 
@@ -146,7 +149,46 @@ export default function AdminPanel() {
         ))}
       </dl>
 
+      {counts.noDepartment > 0 ? (
+        <p className="rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-brand-900">
+          برای {faNumber(counts.noDepartment)} نفر حوزه کاری ثبت نشده است و مسیر تخصصی آن‌ها نمایش داده نمی‌شود. ستون
+          پنجم فایل پرسنل را کامل کنید.
+        </p>
+      ) : null}
+
+      <CapstoneReview token={token} capstones={pendingCapstones} onReviewed={refresh} />
+
       <ClaimReview token={token} claims={pendingClaims} onReviewed={refresh} />
+
+      <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-tracks">
+        <h2 id="admin-tracks" className="font-heading font-bold text-brand-900 text-lg mb-4">
+          مسیرهای آموزشی
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-muted-foreground text-xs">
+              <tr className="text-right">
+                <th className="py-2 px-2 font-medium">مسیر</th>
+                <th className="py-2 px-2 font-medium">مخاطب</th>
+                <th className="py-2 px-2 font-medium">شروع‌کرده</th>
+                <th className="py-2 px-2 font-medium">تکمیل‌کرده</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {tracks.map((track) => (
+                <tr key={track.id}>
+                  <td className="py-2 px-2 text-brand-900">{track.title}</td>
+                  <td className="py-2 px-2 whitespace-nowrap">
+                    {track.audience === 'all' ? 'همه' : departmentLabel(track.audience)}
+                  </td>
+                  <td className="py-2 px-2">{faNumber(track.started)}</td>
+                  <td className="py-2 px-2">{faNumber(track.completed)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-league">
         <h2 id="admin-league" className="font-heading font-bold text-brand-900 text-lg mb-4">
@@ -198,8 +240,8 @@ export default function AdminPanel() {
           token={token}
           endpoint="/api/admin/employees"
           title="پرسنل"
-          columns="کد پرسنلی، نام، شناسه واحد، رمز ۴ تا ۸ رقمی (خالی = رمز قبلی بماند)"
-          example={'1001,علی رضایی,golbahar,4821\n1002,مریم احمدی,technical-office,7390'}
+          columns={`کد پرسنلی، نام، شناسه واحد، رمز ۶ تا ۸ رقمی (خالی = رمز قبلی بماند)، حوزه کاری: ${DEPARTMENTS.map((d) => `${d.value} (${d.label})`).join('، ')}`}
+          example={'1001,علی رضایی,golbahar,482193,technical\n1002,مریم احمدی,technical-office,739051,finance'}
           onImported={refresh}
         />
         <ImportBox

@@ -2,7 +2,7 @@
 
 import { Brain, HardHat, Users } from 'lucide-react';
 import { useHammasirData } from '@/hooks/useHammasirData';
-import { CAMPAIGN_PHASES, faNumber, type MeResponse } from '@/lib/hammasir';
+import { CAMPAIGN_PHASES, departmentLabel, faNumber, type MeResponse } from '@/lib/hammasir';
 import { cn } from '@/lib/utils';
 import PanelState from './PanelState';
 
@@ -24,7 +24,7 @@ export default function StatusPanel({ token, onSessionExpired }: StatusPanelProp
       {/* Wallet */}
       <section className="rounded-2xl bg-brand-900 text-white p-6" aria-labelledby="wallet-heading">
         <p className="text-brand-100/70 text-sm">
-          {employee.name} · {employee.teamName}
+          {employee.name} · {employee.teamName} · {departmentLabel(employee.department)}
         </p>
         <h2 id="wallet-heading" className="mt-3 text-sm text-brand-100">
           کیف پول رادکوین
@@ -50,7 +50,7 @@ export default function StatusPanel({ token, onSessionExpired }: StatusPanelProp
         </div>
         {pendingClaims > 0 ? (
           <p className="mt-3 text-xs text-brand-100/80">
-            {faNumber(pendingClaims)} دوره یا کلاس در انتظار تأیید مدیر است.
+            {faNumber(pendingClaims)} مورد (دوره، کلاس یا پروژه پایانی) در انتظار تأیید مدیر است.
           </p>
         ) : null}
       </section>

@@ -6,6 +6,7 @@ import { HAMMASIR_NAME } from '@/lib/hammasir';
 export const metadata: Metadata = {
   title: `مدیریت ${HAMMASIR_NAME}`,
   robots: { index: false, follow: false },
+  referrer: 'no-referrer',
 };
 
 export default function HammasirAdminPage() {

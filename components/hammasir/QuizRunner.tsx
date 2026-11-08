@@ -5,8 +5,8 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useHammasirData } from '@/hooks/useHammasirData';
 import { faNumber, hammasirApi, type QuizDetail, type QuizResult } from '@/lib/hammasir';
-import { cn } from '@/lib/utils';
 import PanelState from './PanelState';
+import QuizQuestions from './QuizQuestions';
 
 interface QuizRunnerProps {
   quizId: number;
@@ -73,56 +73,21 @@ export default function QuizRunner({ quizId, token, onSessionExpired, onClose }:
         <p className="text-xs text-muted-foreground">هفته {faNumber(quiz.week)}</p>
         <h2 className="text-brand-900 font-heading font-bold text-xl mt-1">{quiz.title}</h2>
 
-        <ol className="mt-6 space-y-6">
-          {quiz.questions.map((question, qi) => (
-            <li key={qi}>
-              <fieldset>
-                <legend className="font-medium text-brand-900 leading-relaxed">
-                  {faNumber(qi + 1)}. {question.q}
-                </legend>
-                <div className="mt-3 space-y-2">
-                  {question.options.map((option, oi) => {
-                    const chosen = answers[qi] === oi;
-                    const correct = outcome?.answers[qi] === oi;
-                    return (
-                      <label
-                        key={oi}
-                        className={cn(
-                          'flex items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-colors',
-                          outcome
-                            ? correct
-                              ? 'border-success bg-success-muted'
-                              : chosen
-                                ? 'border-destructive bg-destructive/10'
-                                : 'border-border'
-                            : chosen
-                              ? 'border-brand-500 bg-brand-50'
-                              : 'border-border cursor-pointer hover:border-brand-400',
-                        )}
-                      >
-                        <input
-                          type="radio"
-                          name={`q-${qi}`}
-                          checked={chosen}
-                          disabled={!!outcome}
-                          onChange={() =>
-                            setAnswers((prev) => {
-                              const next = [...prev];
-                              next[qi] = oi;
-                              return next;
-                            })
-                          }
-                          className="accent-brand-700"
-                        />
-                        {option}
-                      </label>
-                    );
-                  })}
-                </div>
-              </fieldset>
-            </li>
-          ))}
-        </ol>
+        <div className="mt-6">
+          <QuizQuestions
+            name={`quiz-${quiz.id}`}
+            questions={quiz.questions}
+            answers={answers}
+            onAnswer={(qi, oi) =>
+              setAnswers((prev) => {
+                const next = [...prev];
+                next[qi] = oi;
+                return next;
+              })
+            }
+            correctAnswers={outcome?.answers}
+          />
+        </div>
 
         {submitError ? (
           <p

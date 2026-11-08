@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import QuizPanel from './QuizPanel';
 import ActivityPanel from './ActivityPanel';
+import TracksPanel from './TracksPanel';
 
 const SECTIONS = [
+  { id: 'tracks', label: 'مسیرهای آموزشی' },
   { id: 'activities', label: 'دوره‌ها و کلاس‌ها' },
   { id: 'quizzes', label: 'کوییزهای هفتگی' },
 ] as const;
@@ -16,11 +18,11 @@ interface LearnPanelProps {
 }
 
 export default function LearnPanel({ token, onSessionExpired }: LearnPanelProps) {
-  const [section, setSection] = useState<(typeof SECTIONS)[number]['id']>('activities');
+  const [section, setSection] = useState<(typeof SECTIONS)[number]['id']>('tracks');
 
   return (
     <div>
-      <div className="flex gap-2 mb-4" role="group" aria-label="نوع آموزش">
+      <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="نوع آموزش">
         {SECTIONS.map(({ id, label }) => (
           <button
             key={id}
@@ -38,11 +40,9 @@ export default function LearnPanel({ token, onSessionExpired }: LearnPanelProps)
           </button>
         ))}
       </div>
-      {section === 'activities' ? (
-        <ActivityPanel token={token} onSessionExpired={onSessionExpired} />
-      ) : (
-        <QuizPanel token={token} onSessionExpired={onSessionExpired} />
-      )}
+      {section === 'tracks' ? <TracksPanel token={token} onSessionExpired={onSessionExpired} /> : null}
+      {section === 'activities' ? <ActivityPanel token={token} onSessionExpired={onSessionExpired} /> : null}
+      {section === 'quizzes' ? <QuizPanel token={token} onSessionExpired={onSessionExpired} /> : null}
     </div>
   );
 }

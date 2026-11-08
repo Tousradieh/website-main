@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: HAMMASIR_NAME,
   description: 'کمپین سه‌ماهه آماده‌سازی پرسنل توس‌رادیه: کوییزهای هفتگی، ماموریت‌ها و لیگ کارگاه‌ها.',
   robots: { index: false, follow: false },
+  referrer: 'no-referrer',
   manifest: '/hammasir.webmanifest',
 };
 
