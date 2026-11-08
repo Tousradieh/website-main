@@ -48,6 +48,7 @@ export interface MeResponse {
   employee: { code: string; name: string; teamId: string; teamName: string };
   wallet: { knowledge: number; missions: number; total: number };
   missions: MissionEntry[];
+  pendingClaims: number;
   team: TeamStanding | null;
   teamCount: number;
   campaign: CampaignStatus;
@@ -77,9 +78,48 @@ export interface QuizDetail {
   questions: { q: string; options: string[] }[];
 }
 
+export const ACTIVITY_KINDS = [
+  { value: 'course', label: 'دوره', claimLabel: 'دوره را خواندم / دیدم' },
+  { value: 'class', label: 'کلاس', claimLabel: 'در کلاس شرکت کردم' },
+] as const;
+
+export type ActivityKind = (typeof ACTIVITY_KINDS)[number]['value'];
+
+export function activityKind(kind: ActivityKind) {
+  return ACTIVITY_KINDS.find((item) => item.value === kind) ?? ACTIVITY_KINDS[0];
+}
+
+export type ClaimStatus = 'pending' | 'approved' | 'rejected';
+
+export interface ActivitySummary {
+  id: number;
+  week: number;
+  kind: ActivityKind;
+  title: string;
+  description: string;
+  link: string;
+  points: number;
+  open: boolean;
+  claim: { status: ClaimStatus; note: string } | null;
+}
+
+export interface PendingClaim {
+  employeeCode: string;
+  employeeName: string;
+  teamName: string;
+  activityId: number;
+  activityTitle: string;
+  kind: ActivityKind;
+  points: number;
+  note: string;
+  createdAt: number;
+}
+
 export interface AdminOverview {
   counts: { employees: number; active: number; attempts: number };
   quizzes: (Omit<QuizSummary, 'open' | 'result'> & { attempts: number })[];
+  activities: { id: number; week: number; kind: ActivityKind; title: string; points: number; approved: number }[];
+  pendingClaims: PendingClaim[];
   teams: TeamStanding[];
   units: { id: string; name: string; members: number }[];
   campaign: CampaignStatus;

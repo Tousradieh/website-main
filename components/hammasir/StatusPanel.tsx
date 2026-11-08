@@ -15,7 +15,7 @@ export default function StatusPanel({ token, onSessionExpired }: StatusPanelProp
   const { data, error, reload } = useHammasirData<MeResponse>('/api/me', token, onSessionExpired);
   if (!data) return <PanelState error={error} onRetry={reload} />;
 
-  const { employee, wallet, missions, team, teamCount, campaign } = data;
+  const { employee, wallet, missions, pendingClaims, team, teamCount, campaign } = data;
   const phase = CAMPAIGN_PHASES[campaign.phase - 1];
   const progress = Math.round((campaign.week / campaign.totalWeeks) * 100);
 
@@ -36,7 +36,7 @@ export default function StatusPanel({ token, onSessionExpired }: StatusPanelProp
           <div className="rounded-xl bg-white/10 p-3">
             <div className="flex items-center gap-1.5 text-xs text-brand-100">
               <Brain size={14} aria-hidden="true" />
-              امتیاز دانش (کوییز)
+              امتیاز دانش (آموزش)
             </div>
             <p className="font-bold text-xl mt-1">{faNumber(wallet.knowledge)}</p>
           </div>
@@ -48,6 +48,11 @@ export default function StatusPanel({ token, onSessionExpired }: StatusPanelProp
             <p className="font-bold text-xl mt-1">{faNumber(wallet.missions)}</p>
           </div>
         </div>
+        {pendingClaims > 0 ? (
+          <p className="mt-3 text-xs text-brand-100/80">
+            {faNumber(pendingClaims)} دوره یا کلاس در انتظار تأیید مدیر است.
+          </p>
+        ) : null}
       </section>
 
       {/* Campaign progress */}

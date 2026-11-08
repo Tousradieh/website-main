@@ -7,12 +7,12 @@ import { cn } from '@/lib/utils';
 import { hammasirApi, sessionToken } from '@/lib/hammasir';
 import LoginForm from './LoginForm';
 import StatusPanel from './StatusPanel';
-import QuizPanel from './QuizPanel';
+import LearnPanel from './LearnPanel';
 import LeaderboardPanel from './LeaderboardPanel';
 
 const TABS = [
   { id: 'status', label: 'وضعیت من', icon: Wallet },
-  { id: 'quizzes', label: 'کوییزها', icon: BookOpenCheck },
+  { id: 'learn', label: 'آموزش', icon: BookOpenCheck },
   { id: 'league', label: 'لیگ کارگاه‌ها', icon: Trophy },
 ] as const;
 
@@ -72,7 +72,7 @@ export default function HammasirApp() {
       </div>
 
       {tab === 'status' ? <StatusPanel token={token} onSessionExpired={signOut} /> : null}
-      {tab === 'quizzes' ? <QuizPanel token={token} onSessionExpired={signOut} /> : null}
+      {tab === 'learn' ? <LearnPanel token={token} onSessionExpired={signOut} /> : null}
       {tab === 'league' ? <LeaderboardPanel /> : null}
     </div>
   );

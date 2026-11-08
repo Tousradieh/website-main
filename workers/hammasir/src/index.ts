@@ -27,6 +27,14 @@ const MAX_FAILED_LOGINS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+const ACTIVITY_KINDS = ['course', 'class'] as const;
+type ActivityKind = (typeof ACTIVITY_KINDS)[number];
+
+/** Approved course/class points per employee (add WHERE/GROUP BY at the call site). */
+const APPROVED_ACTIVITY_POINTS = `SELECT cl.employee_code, SUM(a.points) AS points
+  FROM activity_claims cl JOIN activities a ON a.id = cl.activity_id
+  WHERE cl.status = 'approved'`;
+
 const ERRORS = {
   badRequest: 'درخواست نامعتبر است',
   unauthorized: 'لطفاً دوباره وارد شوید',
@@ -185,21 +193,23 @@ async function logout(env: Env, request: Request) {
 }
 
 /**
- * Team ranking. An employee's total = quiz points + own mission points + their team's mission
- * points; the team score is the average total per member so small and large sites compete fairly.
- * "Active" means the person took at least one quiz.
+ * Team ranking. An employee's total = quiz points + approved course/class points + own mission
+ * points + their team's mission points; the team score is the average total per member so small
+ * and large sites compete fairly. "Active" means the person took a quiz or finished an activity.
  */
 async function leaderboard(env: Env) {
   const { results } = await env.DB.prepare(
     `SELECT t.id, t.name,
        COUNT(e.code) AS members,
-       COALESCE(SUM(CASE WHEN q.points IS NOT NULL THEN 1 ELSE 0 END), 0) AS active,
-       COALESCE(SUM(COALESCE(q.points, 0) + COALESCE(m.points, 0)), 0) AS personal_points,
+       COALESCE(SUM(CASE WHEN q.points IS NOT NULL OR c.points IS NOT NULL THEN 1 ELSE 0 END), 0) AS active,
+       COALESCE(SUM(COALESCE(q.points, 0) + COALESCE(c.points, 0) + COALESCE(m.points, 0)), 0) AS personal_points,
        COALESCE((SELECT SUM(points) FROM mission_points WHERE team_id = t.id), 0) AS team_points
      FROM teams t
      LEFT JOIN employees e ON e.team_id = t.id
      LEFT JOIN (SELECT employee_code, SUM(points) AS points FROM quiz_attempts GROUP BY employee_code) q
        ON q.employee_code = e.code
+     LEFT JOIN (${APPROVED_ACTIVITY_POINTS} GROUP BY cl.employee_code) c
+       ON c.employee_code = e.code
      LEFT JOIN (SELECT employee_code, SUM(points) AS points FROM mission_points
                 WHERE employee_code IS NOT NULL GROUP BY employee_code) m
        ON m.employee_code = e.code
@@ -228,8 +238,11 @@ async function leaderboard(env: Env) {
 
 async function me(env: Env, request: Request) {
   const employee = await requireEmployee(env, request);
-  const [knowledge, missions, history, teams] = await Promise.all([
-    env.DB.prepare('SELECT COALESCE(SUM(points), 0) AS total FROM quiz_attempts WHERE employee_code = ?')
+  const [knowledge, missions, history, teams, pending] = await Promise.all([
+    env.DB.prepare(
+      `SELECT COALESCE((SELECT SUM(points) FROM quiz_attempts WHERE employee_code = ?1), 0)
+            + COALESCE((SELECT points FROM (${APPROVED_ACTIVITY_POINTS} AND cl.employee_code = ?1)), 0) AS total`,
+    )
       .bind(employee.code)
       .first<{ total: number }>(),
     env.DB.prepare(
@@ -245,6 +258,9 @@ async function me(env: Env, request: Request) {
       .bind(employee.code, employee.team_id)
       .all<{ week: number; points: number; note: string; kind: 'personal' | 'team' }>(),
     leaderboard(env),
+    env.DB.prepare("SELECT COUNT(*) AS count FROM activity_claims WHERE employee_code = ? AND status = 'pending'")
+      .bind(employee.code)
+      .first<{ count: number }>(),
   ]);
 
   const knowledgePoints = knowledge?.total ?? 0;
@@ -254,6 +270,7 @@ async function me(env: Env, request: Request) {
     employee: { code: employee.code, name: employee.name, teamId: employee.team_id, teamName: employee.team_name },
     wallet: { knowledge: knowledgePoints, missions: missionPoints, total: knowledgePoints + missionPoints },
     missions: history.results,
+    pendingClaims: pending?.count ?? 0,
     team: teams.find((t) => t.id === employee.team_id) ?? null,
     teamCount: teams.length,
     campaign: campaignStatus(env),
@@ -343,6 +360,60 @@ async function submitQuiz(env: Env, request: Request, id: number) {
     result: { correct, total, earned },
     answers: quiz.questions.map((question) => question.answer),
   };
+}
+
+async function listActivities(env: Env, request: Request) {
+  const employee = await requireEmployee(env, request);
+  const { week } = campaignStatus(env);
+  const { results } = await env.DB.prepare(
+    `SELECT a.id, a.week, a.kind, a.title, a.description, a.link, a.points, c.status, c.note
+     FROM activities a
+     LEFT JOIN activity_claims c ON c.activity_id = a.id AND c.employee_code = ?
+     ORDER BY a.week, a.id`,
+  )
+    .bind(employee.code)
+    .all<{
+      id: number;
+      week: number;
+      kind: ActivityKind;
+      title: string;
+      description: string;
+      link: string;
+      points: number;
+      status: 'pending' | 'approved' | 'rejected' | null;
+      note: string | null;
+    }>();
+
+  return {
+    ok: true,
+    activities: results.map(({ status, note, ...activity }) => ({
+      ...activity,
+      open: activity.week <= week,
+      claim: status ? { status, note: note ?? '' } : null,
+    })),
+  };
+}
+
+/** Personnel report that they finished a course or attended a class; it waits for approval. */
+async function claimActivity(env: Env, request: Request, id: number) {
+  const employee = await requireEmployee(env, request);
+  const activity = await env.DB.prepare('SELECT week FROM activities WHERE id = ?').bind(id).first<{ week: number }>();
+  if (!activity) throw new HttpError(404, ERRORS.notFound);
+  if (activity.week > campaignStatus(env).week) throw new HttpError(403, 'این دوره هنوز باز نشده است');
+  const { note } = await readJson<{ note?: string }>(request);
+
+  // A rejected claim may be sent again; pending or approved ones may not.
+  const result = await env.DB.prepare(
+    `INSERT INTO activity_claims (employee_code, activity_id, note, status, created_at)
+     VALUES (?, ?, ?, 'pending', ?)
+     ON CONFLICT(employee_code, activity_id) DO UPDATE SET
+       note = excluded.note, status = 'pending', created_at = excluded.created_at, reviewed_at = NULL
+     WHERE activity_claims.status = 'rejected'`,
+  )
+    .bind(employee.code, id, (note ?? '').trim().slice(0, 500), Date.now())
+    .run();
+  if (!result.meta.changes) throw new HttpError(409, 'این مورد قبلاً اعلام شده است');
+  return { ok: true };
 }
 
 // ---------- admin ----------
@@ -503,11 +574,66 @@ async function deleteQuiz(env: Env, id: number) {
   return { ok: true };
 }
 
+async function addActivity(env: Env, request: Request) {
+  const body = await readJson<{
+    week?: number;
+    kind?: string;
+    title?: string;
+    description?: string;
+    link?: string;
+    points?: number;
+  }>(request);
+  const week = Number(body.week);
+  const points = Number(body.points);
+  const link = body.link?.trim() ?? '';
+  const valid =
+    Number.isInteger(week) &&
+    week >= 1 &&
+    week <= CAMPAIGN_WEEKS &&
+    Number.isInteger(points) &&
+    points > 0 &&
+    ACTIVITY_KINDS.includes(body.kind as ActivityKind) &&
+    body.title?.trim() &&
+    (!link || /^https?:\/\//i.test(link));
+  if (!valid) throw new HttpError(400, 'اطلاعات دوره کامل یا معتبر نیست');
+
+  const result = await env.DB.prepare(
+    'INSERT INTO activities (week, kind, title, description, link, points) VALUES (?, ?, ?, ?, ?, ?)',
+  )
+    .bind(week, body.kind, body.title!.trim(), body.description?.trim() ?? '', link, points)
+    .run();
+  return { ok: true, id: result.meta.last_row_id };
+}
+
+async function deleteActivity(env: Env, id: number) {
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM activity_claims WHERE activity_id = ?').bind(id),
+    env.DB.prepare('DELETE FROM activities WHERE id = ?').bind(id),
+  ]);
+  return { ok: true };
+}
+
+async function reviewClaim(env: Env, request: Request) {
+  const body = await readJson<{ employeeCode?: string; activityId?: number; approve?: boolean }>(request);
+  if (!body.employeeCode || !Number.isInteger(body.activityId) || typeof body.approve !== 'boolean') {
+    throw new HttpError(400, ERRORS.badRequest);
+  }
+  const result = await env.DB.prepare(
+    `UPDATE activity_claims SET status = ?, reviewed_at = ?
+     WHERE employee_code = ? AND activity_id = ? AND status = 'pending'`,
+  )
+    .bind(body.approve ? 'approved' : 'rejected', Date.now(), body.employeeCode, body.activityId)
+    .run();
+  if (!result.meta.changes) throw new HttpError(404, 'این درخواست قبلاً بررسی شده است');
+  return { ok: true };
+}
+
 async function overview(env: Env) {
-  const [counts, quizzes, teams, units] = await Promise.all([
+  const [counts, quizzes, teams, units, activities, claims] = await Promise.all([
     env.DB.prepare(
       `SELECT (SELECT COUNT(*) FROM employees) AS employees,
-              (SELECT COUNT(DISTINCT employee_code) FROM quiz_attempts) AS active,
+              (SELECT COUNT(*) FROM (SELECT employee_code FROM quiz_attempts
+                 UNION SELECT employee_code FROM activity_claims WHERE status = 'approved')) AS active,
               (SELECT COUNT(*) FROM quiz_attempts) AS attempts`,
     ).first<{ employees: number; active: number; attempts: number }>(),
     env.DB.prepare(
@@ -519,11 +645,28 @@ async function overview(env: Env) {
     env.DB.prepare(
       'SELECT t.id, t.name, (SELECT COUNT(*) FROM employees e WHERE e.team_id = t.id) AS members FROM teams t ORDER BY t.name',
     ).all(),
+    env.DB.prepare(
+      `SELECT a.id, a.week, a.kind, a.title, a.points,
+         (SELECT COUNT(*) FROM activity_claims c WHERE c.activity_id = a.id AND c.status = 'approved') AS approved
+       FROM activities a ORDER BY a.week, a.id`,
+    ).all(),
+    env.DB.prepare(
+      `SELECT c.employee_code AS employeeCode, e.name AS employeeName, t.name AS teamName,
+         c.activity_id AS activityId, a.title AS activityTitle, a.kind, a.points, c.note, c.created_at AS createdAt
+       FROM activity_claims c
+       JOIN employees e ON e.code = c.employee_code
+       JOIN teams t ON t.id = e.team_id
+       JOIN activities a ON a.id = c.activity_id
+       WHERE c.status = 'pending'
+       ORDER BY c.created_at`,
+    ).all(),
   ]);
   return {
     ok: true,
     counts,
     quizzes: quizzes.results,
+    activities: activities.results,
+    pendingClaims: claims.results,
     teams,
     units: units.results,
     campaign: campaignStatus(env),
@@ -546,13 +689,20 @@ async function route(env: Env, request: Request): Promise<unknown> {
   if (method === 'GET' && pathname === '/api/quizzes') return listQuizzes(env, request);
   if (quizMatch && method === 'GET' && !quizMatch[2]) return getQuiz(env, request, Number(quizMatch[1]));
   if (quizMatch && method === 'POST' && quizMatch[2]) return submitQuiz(env, request, Number(quizMatch[1]));
+  if (method === 'GET' && pathname === '/api/activities') return listActivities(env, request);
+  const claimMatch = pathname.match(/^\/api\/activities\/(\d+)\/claim$/);
+  if (claimMatch && method === 'POST') return claimActivity(env, request, Number(claimMatch[1]));
 
   if (pathname.startsWith('/api/admin/')) {
     requireAdmin(env, request);
     const adminQuiz = pathname.match(/^\/api\/admin\/quizzes\/(\d+)\/delete$/);
+    const adminActivity = pathname.match(/^\/api\/admin\/activities\/(\d+)\/delete$/);
     if (method === 'GET' && pathname === '/api/admin/overview') return overview(env);
     if (method === 'POST' && pathname === '/api/admin/quizzes') return addQuiz(env, request);
     if (method === 'POST' && adminQuiz) return deleteQuiz(env, Number(adminQuiz[1]));
+    if (method === 'POST' && pathname === '/api/admin/activities') return addActivity(env, request);
+    if (method === 'POST' && adminActivity) return deleteActivity(env, Number(adminActivity[1]));
+    if (method === 'POST' && pathname === '/api/admin/claims/review') return reviewClaim(env, request);
     if (method === 'POST') {
       const { text } = await readJson<{ text?: string }>(request);
       if (!text?.trim()) throw new HttpError(400, 'متنی برای ثبت وارد نشده است');

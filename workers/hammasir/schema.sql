@@ -54,3 +54,27 @@ CREATE TABLE IF NOT EXISTS mission_points (
 CREATE INDEX IF NOT EXISTS idx_employees_team ON employees(team_id);
 CREATE INDEX IF NOT EXISTS idx_missions_employee ON mission_points(employee_code);
 CREATE INDEX IF NOT EXISTS idx_missions_team ON mission_points(team_id);
+
+-- Courses to read/watch and classes to attend. Personnel report completion,
+-- an admin approves it, and only approved claims add points.
+CREATE TABLE IF NOT EXISTS activities (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  week INTEGER NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('course', 'class')),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  link TEXT NOT NULL DEFAULT '',
+  points INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS activity_claims (
+  employee_code TEXT NOT NULL REFERENCES employees(code),
+  activity_id INTEGER NOT NULL REFERENCES activities(id),
+  note TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  created_at INTEGER NOT NULL,
+  reviewed_at INTEGER,
+  PRIMARY KEY (employee_code, activity_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_claims_status ON activity_claims(status);

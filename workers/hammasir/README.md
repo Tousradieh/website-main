@@ -38,6 +38,14 @@ NEXT_PUBLIC_HAMMASIR_API_URL=https://tousradieh-hammasir.YOUR_SUBDOMAIN.workers.
 | Personnel | `code, name, team_id, pin` — blank PIN keeps the existing one |
 | Mission points | `target, week, points, note` — target is a personnel code or `team:<id>` for the whole unit; negative points correct a mistake |
 
+Courses (read/watch) and classes (attend) are added on the admin page. Personnel
+report completion with an optional note; the claim stays pending until an admin
+approves it under «در انتظار تأیید», and only approved claims add points (to the
+knowledge share of the wallet). A rejected claim can be reported again.
+
+After pulling this change on an existing database, run `npm run db:init` again —
+it only creates the new `activities` / `activity_claims` tables.
+
 Quizzes are added on the admin page as JSON:
 `[{"q": "...", "options": ["...", "..."], "answer": 0}]` (answer is 0-based).
 

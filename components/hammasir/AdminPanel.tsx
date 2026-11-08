@@ -5,7 +5,16 @@ import { Loader2, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formFieldClass } from '@/lib/form-ui';
 import { useStoredToken } from '@/hooks/useStoredToken';
-import { adminToken, faNumber, hammasirApi, type AdminOverview, type ApiResult } from '@/lib/hammasir';
+import {
+  activityKind,
+  adminToken,
+  faNumber,
+  hammasirApi,
+  type AdminOverview,
+  type ApiResult,
+} from '@/lib/hammasir';
+import ActivityForm from './ActivityForm';
+import ClaimReview from './ClaimReview';
 import ImportBox from './ImportBox';
 import QuizForm from './QuizForm';
 
@@ -65,6 +74,13 @@ export default function AdminPanel() {
     refresh();
   };
 
+  const deleteActivity = async (id: number, title: string) => {
+    if (!token || !window.confirm(`«${title}» و همه تأییدها و امتیازهای آن حذف شود؟`)) return;
+    const result = await hammasirApi(`/api/admin/activities/${id}/delete`, { token, body: {} });
+    if (!result.ok) setError(result.error);
+    refresh();
+  };
+
   if (token === undefined) return null;
 
   if (!token || !overview) {
@@ -98,7 +114,7 @@ export default function AdminPanel() {
     );
   }
 
-  const { counts, campaign, teams, units, quizzes } = overview;
+  const { counts, campaign, teams, units, quizzes, activities, pendingClaims } = overview;
   const stats = [
     { label: 'پرسنل ثبت‌شده', value: counts.employees },
     { label: 'پرسنل فعال', value: counts.active },
@@ -129,6 +145,8 @@ export default function AdminPanel() {
           </div>
         ))}
       </dl>
+
+      <ClaimReview token={token} claims={pendingClaims} onReviewed={refresh} />
 
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-league">
         <h2 id="admin-league" className="font-heading font-bold text-brand-900 text-lg mb-4">
@@ -193,6 +211,38 @@ export default function AdminPanel() {
           onImported={refresh}
         />
       </div>
+
+      <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-activities">
+        <h2 id="admin-activities" className="font-heading font-bold text-brand-900 text-lg mb-4">
+          دوره‌ها و کلاس‌ها
+        </h2>
+        {activities.length === 0 ? (
+          <p className="text-sm text-muted-foreground mb-6">هنوز دوره یا کلاسی ثبت نشده است.</p>
+        ) : (
+          <ul className="divide-y divide-border mb-6">
+            {activities.map((activity) => (
+              <li key={activity.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+                <div>
+                  <p className="font-medium text-brand-900">{activity.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {activityKind(activity.kind).label} · هفته {faNumber(activity.week)} ·{' '}
+                    {faNumber(activity.points)} رادکوین · {faNumber(activity.approved)} نفر تأییدشده
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => deleteActivity(activity.id, activity.title)}
+                  className="p-2 text-muted-foreground hover:text-destructive"
+                  aria-label={`حذف ${activity.title}`}
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <ActivityForm token={token} onAdded={refresh} />
+      </section>
 
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-quizzes">
         <h2 id="admin-quizzes" className="font-heading font-bold text-brand-900 text-lg mb-4">
