@@ -479,3 +479,29 @@ export async function hammasirApi<T>(
 export function faNumber(value: number): string {
   return value.toLocaleString('fa-IR');
 }
+
+// ---------- admin data tables ----------
+
+export interface AdminEmployee {
+  code: string;
+  name: string;
+  teamId: string;
+  teamName: string;
+  department: Department | null;
+  isManager: number;
+  jobTitle: string;
+  mobile: string;
+  locked: number;
+}
+
+export interface AdminMission {
+  id: number;
+  employeeCode: string | null;
+  employeeName: string | null;
+  teamId: string | null;
+  teamName: string | null;
+  week: number;
+  points: number;
+  note: string;
+  createdAt: number;
+}

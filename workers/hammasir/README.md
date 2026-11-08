@@ -94,6 +94,14 @@ run `npm run db:migrate`; `0001` only creates missing tables and `0002` adds the
 department column and the new tables. Existing sign-ins are ended once (sessions are
 now stored hashed).
 
+## Admin data tables
+
+The «واحدها، پرسنل و امتیازها» tab of `/hammasir/admin` has tables to add, edit and delete
+units/sites, personnel and mission points one by one. Adding a person generates a random
+6-digit PIN (or uses one you type) and shows it once; the key button on a row makes a new
+PIN, unlocks the account and signs the person out everywhere. Deleting a person removes all
+their points and submissions. CSV imports below remain for bulk loads.
+
 ## Admin imports (paste from Excel or CSV, header row optional)
 
 | Import | Columns |

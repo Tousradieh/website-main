@@ -4,6 +4,7 @@ import * as campaign from './campaign';
 import * as engagement from './engagement';
 import { campaignStatus, corsHeaders, ERRORS, HttpError, json, MAX_ADMIN_BODY_BYTES, readJson, type Env } from './http';
 import * as learning from './learning';
+import * as records from './records';
 import { leaderboard, peoplePoints } from './points';
 
 const ADMIN: learning.Reviewer = { kind: 'admin' };
@@ -81,7 +82,21 @@ async function routeAdmin(env: Env, request: Request, method: string, pathname: 
 
   if (method === 'GET' && pathname === '/api/admin/overview') return admin.overview(env);
   if (method === 'GET' && pathname === '/api/admin/people') return { ok: true, people: await peoplePoints(env) };
+  if (method === 'GET' && pathname === '/api/admin/employees') return records.listEmployees(env);
+  if (method === 'GET' && pathname === '/api/admin/missions') return records.listMissions(env);
   if (method !== 'POST') throw new HttpError(404, ERRORS.notFound);
+
+  if (pathname === '/api/admin/teams/save') return records.saveTeam(env, request);
+  if ((match = pathname.match(/^\/api\/admin\/teams\/([a-z0-9-]+)\/delete$/))) return records.deleteTeam(env, match[1]);
+  if (pathname === '/api/admin/employees/save') return records.saveEmployee(env, request);
+  if ((match = pathname.match(/^\/api\/admin\/employees\/([0-9A-Za-z-]+)\/pin$/))) {
+    return records.resetPin(env, request, match[1]);
+  }
+  if ((match = pathname.match(/^\/api\/admin\/employees\/([0-9A-Za-z-]+)\/delete$/))) {
+    return records.deleteEmployee(env, match[1]);
+  }
+  if (pathname === '/api/admin/missions/save') return records.saveMission(env, request);
+  if ((match = pathname.match(/^\/api\/admin\/missions\/(\d+)\/delete$/))) return records.deleteMission(env, Number(match[1]));
 
   if (pathname === '/api/admin/quizzes') return admin.addQuiz(env, request);
   if ((match = pathname.match(/^\/api\/admin\/quizzes\/(\d+)\/delete$/))) return admin.deleteQuiz(env, Number(match[1]));
