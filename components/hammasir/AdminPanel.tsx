@@ -374,7 +374,7 @@ export default function AdminPanel() {
           token={token}
           endpoint="/api/admin/employees"
           title="پرسنل"
-          columns={`کد پرسنلی، نام، شناسه واحد/کارگاه، رمز ۶ تا ۸ رقمی (خالی = رمز قبلی بماند)، واحد سازمانی: ${DEPARTMENTS.map((d) => `${d.value} (${d.label})`).join('، ')}، ستون ششم «مدیر» برای مدیران و سرپرستان`}
+          columns={`کد پرسنلی، نام، شناسه واحد/کارگاه، رمز ۶ تا ۸ رقمی (اختیاری؛ برای نفر جدید خالی = ساخت خودکار، برای نفر موجود خالی = رمز قبلی بماند؛ ستون رمز را می‌توانید کلاً حذف کنید)، واحد سازمانی: ${DEPARTMENTS.map((d) => `${d.value} (${d.label})`).join('، ')}، ستون ششم «مدیر» برای مدیران و سرپرستان`}
           example={'1001,علی رضایی,golbahar,482193,plants\n1002,مریم احمدی,hq-finance,739051,finance,مدیر'}
           onImported={() => {
             refresh();

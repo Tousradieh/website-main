@@ -3,6 +3,7 @@ import { ACTIVITY_KINDS, type ActivityKind, type QuizQuestion } from './campaign
 import { DEPARTMENTS, type Department } from './curriculum';
 import { CAMPAIGN_WEEKS, campaignStatus, cleanText, ERRORS, HttpError, normalizeDigits, readJson, type Env } from './http';
 import { pendingImprovements, storeAdmin, topImprovements } from './engagement';
+import { generatePin } from './records';
 import { pendingCapstones, reviewerScope, trackStats, type Reviewer } from './learning';
 import { activeCount, leaderboard } from './points';
 
@@ -14,6 +15,8 @@ interface ImportResult {
   ok: true;
   imported: number;
   errors: string[];
+  /** PINs generated for new people; returned once so HR can hand them out. */
+  pins?: { code: string; name: string; pin: string }[];
 }
 
 /** Parses CSV or tab-separated text pasted from Excel. Skips blank lines and a header row. */
@@ -65,15 +68,25 @@ export async function importTeams(env: Env, text: string): Promise<ImportResult>
 export async function importEmployees(env: Env, text: string): Promise<ImportResult> {
   const errors: string[] = [];
   const statements: D1PreparedStatement[] = [];
+  const pins: { code: string; name: string; pin: string }[] = [];
   let imported = 0;
-  const { results: teams } = await env.DB.prepare('SELECT id FROM teams').all<{ id: string }>();
+  const [{ results: teams }, { results: existing }] = await Promise.all([
+    env.DB.prepare('SELECT id FROM teams').all<{ id: string }>(),
+    env.DB.prepare('SELECT code FROM employees').all<{ code: string }>(),
+  ]);
   const teamIds = new Set(teams.map((t) => t.id));
+  const existingCodes = new Set(existing.map((e) => e.code));
 
   for (const [i, row] of parseRows(text, ['code', 'کد']).entries()) {
-    const [rawCode, rawName, teamId, rawPin, rawDepartment, rawManager] = row;
+    // Two layouts: code,name,unit,PIN,department,manager — or, without a PIN column,
+    // code,name,unit,department,manager (fourth column is not a number).
+    const fourth = normalizeDigits(row[3] ?? '');
+    const withoutPin = fourth !== '' && !/^\d+$/.test(fourth);
+    const [rawCode, rawName, teamId] = row;
+    const [rawPin, rawDepartment, rawManager] = withoutPin ? ['', row[3], row[4]] : [row[3], row[4], row[5]];
     const code = normalizeDigits(rawCode ?? '');
     const name = (rawName ?? '').slice(0, 100);
-    const pin = normalizeDigits(rawPin ?? '');
+    let pin = normalizeDigits(rawPin ?? '');
     let department = (rawDepartment ?? '').toLowerCase() || null;
     // Sixth column marks managers/supervisors; the old "management" department means the same.
     let isManager = ['1', 'yes', 'manager', 'مدیر', 'بله', 'سرپرست'].includes((rawManager ?? '').trim().toLowerCase()) ? 1 : 0;
@@ -102,6 +115,13 @@ export async function importEmployees(env: Env, text: string): Promise<ImportRes
       continue;
     }
     imported += 1;
+    const isNew = !existingCodes.has(code);
+    if (!pin && isNew) {
+      // New person without a PIN: generate one and report it once.
+      pin = generatePin();
+      pins.push({ code, name, pin });
+    }
+    existingCodes.add(code);
     if (pin) {
       statements.push(
         env.DB.prepare(
@@ -123,7 +143,7 @@ export async function importEmployees(env: Env, text: string): Promise<ImportRes
     }
   }
   await runBatches(env, statements);
-  return { ok: true, imported, errors };
+  return { ok: true, imported, errors, pins };
 }
 
 export async function importMissions(env: Env, text: string): Promise<ImportResult> {

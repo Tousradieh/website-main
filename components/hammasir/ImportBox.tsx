@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ChangeEvent } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Download, KeyRound, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formFieldClass } from '@/lib/form-ui';
 import { faNumber, hammasirApi, type ImportResult } from '@/lib/hammasir';
@@ -20,6 +20,19 @@ export default function ImportBox({ token, endpoint, title, columns, example, on
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; lines: string[] } | null>(null);
+  // PINs generated for new people by this import; shown once, never stored in the browser.
+  const [pins, setPins] = useState<NonNullable<ImportResult['pins']>>([]);
+
+  const downloadPins = () => {
+    const rows = pins.map((p) => [p.code, p.name, p.pin].map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','));
+    const csv = '\uFEFF"کد","نام","رمز"\n' + rows.join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `hammasir-pins-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const readFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,6 +53,7 @@ export default function ImportBox({ token, endpoint, title, columns, example, on
       ok: result.errors.length === 0,
       lines: [`${faNumber(result.imported)} ردیف ثبت شد.`, ...result.errors],
     });
+    if (result.pins?.length) setPins((prev) => [...prev, ...result.pins!]);
     if (result.errors.length === 0) setText('');
     onImported();
   };
@@ -70,6 +84,42 @@ export default function ImportBox({ token, endpoint, title, columns, example, on
             <li key={i}>{line}</li>
           ))}
         </ul>
+      ) : null}
+      {pins.length ? (
+        <div role="alert" className="mt-3 rounded-xl border-2 border-gold bg-gold/10 p-3 text-xs text-brand-900">
+          <div className="flex items-start justify-between gap-2">
+            <p className="flex items-center gap-1.5 font-bold">
+              <KeyRound size={14} aria-hidden="true" />
+              رمز {faNumber(pins.length)} نفر جدید ساخته شد
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('فایل رمزها را دانلود کرده‌اید؟ بعد از بستن، رمزها دیگر نمایش داده نمی‌شوند.')) setPins([]);
+              }}
+              className="p-1 text-brand-900/60 hover:text-brand-900"
+              aria-label="بستن فهرست رمزها"
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          </div>
+          <p className="mt-1 leading-relaxed">
+            این رمزها فقط همین یک بار نمایش داده می‌شوند. فایل را دانلود و رمز هر نفر را جداگانه به خودش بدهید؛ سپس فایل را
+            پاک کنید.
+          </p>
+          <Button type="button" variant="brand" onClick={downloadPins} className="mt-2 h-auto px-3 py-1.5 rounded-md text-xs">
+            <Download size={14} aria-hidden="true" />
+            دانلود فهرست رمزها (CSV)
+          </Button>
+          <ul className="mt-2 max-h-40 overflow-y-auto space-y-0.5" dir="ltr">
+            {pins.map((p) => (
+              <li key={p.code} className="flex justify-between gap-2 font-mono">
+                <span>{p.code}</span>
+                <span>{p.pin}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
       <Button
         type="button"
