@@ -1,5 +1,7 @@
 import type { Employee } from './auth';
 import { campaignStatus, cleanText, ERRORS, HttpError, readJson, type Env } from './http';
+import { TRACKS } from './curriculum';
+import { myMessages } from './engagement';
 import { leaderboard, wallet } from './points';
 
 export interface QuizQuestion {
@@ -19,8 +21,16 @@ interface QuizRow {
 export const ACTIVITY_KINDS = ['course', 'class'] as const;
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
+/** Month-1 operational tasks for everyone (campaign document, roadmap table). */
+const SHARED_OPERATIONAL_TASKS = [
+  'تکمیل پروفایل دیجیتال در همین پلتفرم.',
+  'ورود مستمر به سامانه‌های فعلی شرکت (اتوماسیون، CMMS، کنترل پروژه).',
+  'ثبت آزمایشی و بدون خطای گزارش‌های کارگاهی و واحدی در سامانه.',
+];
+
 export async function me(env: Env, employee: Employee) {
-  const [points, history, teams, pending] = await Promise.all([
+  const unitTrack = TRACKS.find((track) => track.audience === employee.department);
+  const [points, history, teams, pending, messages] = await Promise.all([
     wallet(env, employee.code, employee.team_id),
     env.DB.prepare(
       `SELECT week, points, note, CASE WHEN team_id IS NULL THEN 'personal' ELSE 'team' END AS kind
@@ -32,10 +42,12 @@ export async function me(env: Env, employee: Employee) {
     leaderboard(env),
     env.DB.prepare(
       `SELECT (SELECT COUNT(*) FROM activity_claims WHERE employee_code = ?1 AND status = 'pending')
-            + (SELECT COUNT(*) FROM capstones WHERE employee_code = ?1 AND status = 'pending') AS count`,
+            + (SELECT COUNT(*) FROM capstones WHERE employee_code = ?1 AND status = 'pending')
+            + (SELECT COUNT(*) FROM improvement_projects WHERE employee_code = ?1 AND status = 'pending') AS count`,
     )
       .bind(employee.code)
       .first<{ count: number }>(),
+    myMessages(env, employee),
   ]);
 
   return {
@@ -46,8 +58,13 @@ export async function me(env: Env, employee: Employee) {
       teamId: employee.team_id,
       teamName: employee.team_name,
       department: employee.department,
+      isManager: employee.is_manager === 1,
+      jobTitle: employee.job_title,
+      mobile: employee.mobile,
     },
     wallet: points,
+    messages,
+    operationalTasks: [...SHARED_OPERATIONAL_TASKS, ...(unitTrack?.operationalTasks ?? [])],
     missions: history.results,
     pendingClaims: pending?.count ?? 0,
     team: teams.find((t) => t.id === employee.team_id) ?? null,

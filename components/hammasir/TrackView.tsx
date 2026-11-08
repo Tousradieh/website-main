@@ -1,8 +1,8 @@
 'use client';
 
-import { ArrowRight, Award, CheckCircle2, ChevronLeft, Lock, RotateCcw } from 'lucide-react';
+import { ArrowDown, ArrowRight, Award, CheckCircle2, ChevronLeft, ClipboardCheck, Lock, RotateCcw } from 'lucide-react';
 import { useHammasirData } from '@/hooks/useHammasirData';
-import { faNumber, type TrackDetail } from '@/lib/hammasir';
+import { faNumber, PERSPECTIVES, type TrackDetail } from '@/lib/hammasir';
 import { cn } from '@/lib/utils';
 import CapstoneForm from './CapstoneForm';
 import PanelState from './PanelState';
@@ -81,6 +81,47 @@ export default function TrackView({ trackId, token, onSessionExpired, onBack, on
         </ul>
       </section>
 
+      {track.learningMap.length ? (
+        <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="track-map">
+          <h3 id="track-map" className="font-heading font-bold text-brand-900">
+            نقشه یادگیری: کار شما چطور به نتیجه شرکت می‌رسد
+          </h3>
+          <ol className="mt-4 flex flex-col-reverse gap-1">
+            {track.learningMap.map((step, i) => (
+              <li key={step.perspective} className="flex flex-col items-stretch">
+                <div className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-3">
+                  <p className="text-xs font-bold text-brand-700">{PERSPECTIVES[step.perspective]}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-brand-900">{step.text}</p>
+                </div>
+                {i > 0 ? (
+                  <ArrowDown size={18} className="mx-auto my-1 rotate-180 text-brand-400" aria-hidden="true" />
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
+      {track.operationalTasks.length ? (
+        <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="track-ops">
+          <h3 id="track-ops" className="flex items-center gap-2 font-heading font-bold text-brand-900">
+            <ClipboardCheck size={18} className="text-brand-700" aria-hidden="true" />
+            ماموریت‌های عملیاتی واحد (۶۰٪ امتیاز)
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+            امتیاز این کارها را مدیر یا تیم استراتژی از روی داده سامانه‌های شرکت ثبت می‌کند.
+          </p>
+          <ul className="mt-3 space-y-2 text-sm leading-relaxed text-brand-900">
+            {track.operationalTasks.map((task) => (
+              <li key={task} className="flex gap-2">
+                <span className="mt-2 size-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                {task}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <section aria-labelledby="track-modules">
         <h3 id="track-modules" className="font-heading font-bold text-brand-900 mb-3">
           درس‌ها
@@ -132,7 +173,9 @@ export default function TrackView({ trackId, token, onSessionExpired, onBack, on
       </section>
 
       <section className="bg-card rounded-2xl border-2 border-gold/50 p-5 sm:p-6" aria-labelledby="track-capstone">
-        <p className="text-xs font-medium text-brand-700">پروژه پایانی · {faNumber(capstone.points)} رادکوین ماموریت</p>
+        <p className="text-xs font-medium text-brand-700">
+          پروژه پایانی · {faNumber(capstone.points)} رادکوین {track.share === 'ai' ? 'مهارت هوش مصنوعی' : 'ماموریت'}
+        </p>
         <h3 id="track-capstone" className="font-heading font-bold text-brand-900 text-lg mt-1">
           {capstone.title}
         </h3>

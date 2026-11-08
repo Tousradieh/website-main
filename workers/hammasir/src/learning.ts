@@ -1,6 +1,7 @@
-import type { Employee } from './auth';
+import { learnerOf, type Employee } from './auth';
 import {
   canAccess,
+  capstoneFor,
   findModule,
   findTrack,
   MODULE_POINTS,
@@ -42,7 +43,7 @@ async function moduleResults(env: Env, employeeCode: string) {
   return new Map(results.map((row) => [row.module_id, row]));
 }
 
-async function capstoneFor(env: Env, employeeCode: string, trackId: string) {
+async function capstoneRow(env: Env, employeeCode: string, trackId: string) {
   return env.DB.prepare(
     'SELECT track_id, text, status, points, feedback FROM capstones WHERE employee_code = ? AND track_id = ?',
   )
@@ -50,9 +51,19 @@ async function capstoneFor(env: Env, employeeCode: string, trackId: string) {
     .first<CapstoneRow>();
 }
 
+/** Admins review everything; a manager reviews people of their own unit/site (not themselves). */
+export type Reviewer = { kind: 'admin' } | { kind: 'manager'; code: string; name: string; teamId: string };
+
+/** SQL condition (on alias e = employees) limiting rows to what the reviewer may act on. */
+export function reviewerScope(reviewer: Reviewer): { sql: string; binds: string[] } {
+  return reviewer.kind === 'admin'
+    ? { sql: '1 = 1', binds: [] }
+    : { sql: 'e.team_id = ? AND e.code != ?', binds: [reviewer.teamId, reviewer.code] };
+}
+
 function accessibleTrack(employee: Employee, trackId: string): Track {
   const track = findTrack(trackId);
-  if (!track || !canAccess(track, employee.department)) throw new HttpError(404, ERRORS.notFound);
+  if (!track || !canAccess(track, learnerOf(employee))) throw new HttpError(404, ERRORS.notFound);
   return track;
 }
 
@@ -81,6 +92,7 @@ function trackSummary(track: Track) {
     id: track.id,
     title: track.title,
     audience: track.audience,
+    share: track.share,
     icon: track.icon,
     description: track.description,
     moduleCount: track.modules.length,
@@ -100,7 +112,8 @@ export async function listTracks(env: Env, employee: Employee) {
   return {
     ok: true,
     department: employee.department,
-    tracks: TRACKS.filter((track) => canAccess(track, employee.department)).map((track) => ({
+    isManager: employee.is_manager === 1,
+    tracks: TRACKS.filter((track) => canAccess(track, learnerOf(employee))).map((track) => ({
       ...trackSummary(track),
       passedModules: track.modules.filter((module) => results.get(module.id)?.passed === 1).length,
       capstoneStatus: capstoneStatus.get(track.id) ?? null,
@@ -112,7 +125,7 @@ export async function getTrack(env: Env, employee: Employee, trackId: string) {
   const track = accessibleTrack(employee, trackId);
   const [results, capstone] = await Promise.all([
     moduleResults(env, employee.code),
-    capstoneFor(env, employee.code, track.id),
+    capstoneRow(env, employee.code, track.id),
   ]);
   const { week } = campaignStatus(env);
   const allPassed = track.modules.every((module) => results.get(module.id)?.passed === 1);
@@ -122,6 +135,8 @@ export async function getTrack(env: Env, employee: Employee, trackId: string) {
     track: {
       ...trackSummary(track),
       outcomes: track.outcomes,
+      learningMap: track.learningMap ?? [],
+      operationalTasks: track.operationalTasks ?? [],
       sources: track.sources,
       modules: track.modules.map((module) => ({
         id: module.id,
@@ -133,7 +148,7 @@ export async function getTrack(env: Env, employee: Employee, trackId: string) {
         result: resultSummary(results.get(module.id)),
       })),
       capstone: {
-        ...track.capstone,
+        ...capstoneFor(track, learnerOf(employee)),
         available: allPassed,
         submission: capstone
           ? { status: capstone.status, text: capstone.text, feedback: capstone.feedback, points: capstone.points }
@@ -217,7 +232,7 @@ export async function submitCapstone(env: Env, employee: Employee, request: Requ
        created_at = excluded.created_at, reviewed_at = NULL
      WHERE capstones.status = 'rejected'`,
   )
-    .bind(employee.code, track.id, text, track.capstone.points, Date.now())
+    .bind(employee.code, track.id, text, capstoneFor(track, learnerOf(employee)).points, Date.now())
     .run();
   if (!result.meta.changes) throw new HttpError(409, 'پروژه پایانی این مسیر قبلاً ارسال شده است');
   return { ok: true };
@@ -245,32 +260,42 @@ export async function trackStats(env: Env) {
   }));
 }
 
-export async function pendingCapstones(env: Env) {
+export async function pendingCapstones(env: Env, reviewer: Reviewer) {
+  const scope = reviewerScope(reviewer);
   const { results } = await env.DB.prepare(
     `SELECT c.employee_code AS employeeCode, e.name AS employeeName, t.name AS teamName,
-       c.track_id AS trackId, c.text, c.points, c.created_at AS createdAt
+       c.track_id AS trackId, c.text, c.points, c.created_at AS createdAt,
+       e.department, e.is_manager AS isManager
      FROM capstones c
      JOIN employees e ON e.code = c.employee_code
      JOIN teams t ON t.id = e.team_id
-     WHERE c.status = 'pending'
+     WHERE c.status = 'pending' AND ${scope.sql}
      ORDER BY c.created_at`,
-  ).all<{ employeeCode: string; trackId: string }>();
-  return results.map((row) => {
+  )
+    .bind(...scope.binds)
+    .all<{ employeeCode: string; trackId: string; department: Employee['department']; isManager: number }>();
+  return results.map(({ department, isManager, ...row }) => {
     const track = findTrack(row.trackId);
-    return { ...row, trackTitle: track?.title ?? row.trackId, capstoneTitle: track?.capstone.title ?? '' };
+    return {
+      ...row,
+      trackTitle: track?.title ?? row.trackId,
+      capstoneTitle: track ? capstoneFor(track, { department, isManager: isManager === 1 }).title : '',
+    };
   });
 }
 
-export async function reviewCapstone(env: Env, request: Request) {
+export async function reviewCapstone(env: Env, request: Request, reviewer: Reviewer) {
   const body = await readJson<{ employeeCode?: unknown; trackId?: unknown; approve?: unknown; feedback?: unknown }>(
     request,
   );
   if (typeof body.employeeCode !== 'string' || typeof body.trackId !== 'string' || typeof body.approve !== 'boolean') {
     throw new HttpError(400, ERRORS.badRequest);
   }
+  const scope = reviewerScope(reviewer);
   const result = await env.DB.prepare(
     `UPDATE capstones SET status = ?, feedback = ?, reviewed_at = ?
-     WHERE employee_code = ? AND track_id = ? AND status = 'pending'`,
+     WHERE employee_code = ? AND track_id = ? AND status = 'pending'
+       AND employee_code IN (SELECT e.code FROM employees e WHERE ${scope.sql})`,
   )
     .bind(
       body.approve ? 'approved' : 'rejected',
@@ -278,6 +303,7 @@ export async function reviewCapstone(env: Env, request: Request) {
       Date.now(),
       body.employeeCode,
       body.trackId,
+      ...scope.binds,
     )
     .run();
   if (!result.meta.changes) throw new HttpError(404, 'این پروژه قبلاً بررسی شده است');

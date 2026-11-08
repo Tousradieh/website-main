@@ -7,19 +7,21 @@ import { activityKind, faNumber, hammasirApi, type PendingClaim } from '@/lib/ha
 
 interface ClaimReviewProps {
   token: string;
+  /** '/api/admin' for the strategy team, '/api/team' for a manager's own unit. */
+  basePath?: string;
   claims: PendingClaim[];
   onReviewed: () => void;
 }
 
 /** Approve or reject personnel reports of finished courses / attended classes. */
-export default function ClaimReview({ token, claims, onReviewed }: ClaimReviewProps) {
+export default function ClaimReview({ token, basePath = '/api/admin', claims, onReviewed }: ClaimReviewProps) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const review = async (claim: PendingClaim, approve: boolean) => {
     setBusy(`${claim.employeeCode}-${claim.activityId}`);
     setError(null);
-    const result = await hammasirApi('/api/admin/claims/review', {
+    const result = await hammasirApi(`${basePath}/claims/review`, {
       token,
       body: { employeeCode: claim.employeeCode, activityId: claim.activityId, approve },
     });

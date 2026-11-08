@@ -49,11 +49,14 @@ export interface MissionEntry {
 
 /** Keep keys in sync with workers/hammasir/src/curriculum/types.ts DEPARTMENTS */
 export const DEPARTMENTS = [
-  { value: 'management', label: 'مدیریت و سرپرستی' },
-  { value: 'hr', label: 'منابع انسانی' },
-  { value: 'technical', label: 'فنی و اجرایی' },
-  { value: 'finance', label: 'حسابداری و مالی' },
-  { value: 'sales', label: 'فروش و بازاریابی' },
+  { value: 'technical', label: 'فنی و مهندسی و کارگاه‌ها' },
+  { value: 'plants', label: 'کارخانجات و تولید' },
+  { value: 'machinery', label: 'ماشین‌آلات و ناوگان' },
+  { value: 'finance', label: 'مالی، بودجه و انبارها' },
+  { value: 'sales', label: 'مناقصات، قراردادها و بازرگانی' },
+  { value: 'hr', label: 'سرمایه انسانی، اداری و HSE' },
+  { value: 'rnd', label: 'تحقیقات و توسعه (R&D)' },
+  { value: 'strategy', label: 'تیم استراتژیک (OSM)' },
 ] as const;
 
 export type Department = (typeof DEPARTMENTS)[number]['value'];
@@ -62,9 +65,29 @@ export function departmentLabel(value: string | null): string {
   return DEPARTMENTS.find((item) => item.value === value)?.label ?? 'تعیین نشده';
 }
 
+export interface Wallet {
+  knowledge: number;
+  ai: number;
+  missions: number;
+  total: number;
+  spent: number;
+  balance: number;
+}
+
 export interface MeResponse {
-  employee: { code: string; name: string; teamId: string; teamName: string; department: Department | null };
-  wallet: { knowledge: number; missions: number; total: number };
+  employee: {
+    code: string;
+    name: string;
+    teamId: string;
+    teamName: string;
+    department: Department | null;
+    isManager: boolean;
+    jobTitle: string;
+    mobile: string;
+  };
+  wallet: Wallet;
+  messages: { fromName: string; text: string; createdAt: number }[];
+  operationalTasks: string[];
   missions: MissionEntry[];
   pendingClaims: number;
   team: TeamStanding | null;
@@ -135,12 +158,39 @@ export interface PendingClaim {
 
 // ---------- learning tracks ----------
 
-export type TrackIcon = 'compass' | 'briefcase' | 'users' | 'hard-hat' | 'calculator' | 'handshake' | 'sparkles';
+export type TrackIcon =
+  | 'compass'
+  | 'briefcase'
+  | 'users'
+  | 'hard-hat'
+  | 'calculator'
+  | 'handshake'
+  | 'sparkles'
+  | 'factory'
+  | 'truck'
+  | 'flask'
+  | 'target';
+
+export type Audience = 'all' | 'managers' | Department;
+
+export function audienceLabel(audience: Audience): string {
+  if (audience === 'all') return 'همه همکاران';
+  if (audience === 'managers') return 'ویژه مدیران و سرپرستان';
+  return `مسیر واحد · ${departmentLabel(audience)}`;
+}
+
+export const PERSPECTIVES = {
+  learning: 'یادگیری و رشد',
+  process: 'فرآیندهای داخلی',
+  customer: 'مشتری',
+  financial: 'مالی',
+} as const;
 
 export interface TrackSummary {
   id: string;
   title: string;
-  audience: 'all' | Department;
+  audience: Audience;
+  share: 'knowledge' | 'ai';
   icon: TrackIcon;
   description: string;
   moduleCount: number;
@@ -159,6 +209,8 @@ export interface ModuleResult {
 
 export interface TrackDetail extends Omit<TrackSummary, 'passedModules' | 'capstoneStatus'> {
   outcomes: string[];
+  learningMap: { perspective: keyof typeof PERSPECTIVES; text: string }[];
+  operationalTasks: string[];
   sources: string[];
   modules: {
     id: string;
@@ -209,13 +261,137 @@ export interface PendingCapstone {
   createdAt: number;
 }
 
+// ---------- improvement projects, store, team ----------
+
+/** Keep in sync with workers/hammasir/src/engagement.ts IMPROVEMENT_CATEGORIES */
+export const IMPROVEMENT_CATEGORIES = [
+  { value: 'waste', label: 'کاهش ضایعات مصالح' },
+  { value: 'fuel', label: 'کاهش مصرف سوخت و انرژی' },
+  { value: 'idle', label: 'کاهش خواب ماشین‌آلات' },
+  { value: 'systems', label: 'بهبود کار با سامانه‌ها' },
+  { value: 'ai', label: 'تسریع کار با هوش مصنوعی' },
+  { value: 'quality', label: 'کیفیت و کاهش دوباره‌کاری' },
+  { value: 'safety', label: 'ایمنی و HSE' },
+  { value: 'other', label: 'سایر' },
+] as const;
+
+export function improvementCategoryLabel(value: string): string {
+  return IMPROVEMENT_CATEGORIES.find((item) => item.value === value)?.label ?? value;
+}
+
+/** Ease × impact quadrant of the Duke Children's Hospital matrix. */
+export function matrixQuadrant(ease: number, impact: number): string {
+  const easy = ease >= 3;
+  const strong = impact >= 3;
+  if (easy && strong) return 'کم‌هزینه و پربازده: فوراً اجرا شود';
+  if (!easy && strong) return 'پرتلاش و پربازده: پروژه برنامه‌ریزی‌شده';
+  if (easy && !strong) return 'کم‌تلاش و کم‌اثر: در صورت فرصت';
+  return 'پرتلاش و کم‌اثر: فعلاً کنار گذاشته شود';
+}
+
+export interface ImprovementProject {
+  id: number;
+  title: string;
+  category: string;
+  problem: string;
+  solution: string;
+  teammates: string;
+  status: ClaimStatus;
+  ease: number | null;
+  impact: number | null;
+  points: number;
+  feedback: string;
+  createdAt: number;
+}
+
+export interface PendingImprovement {
+  id: number;
+  employeeCode: string;
+  employeeName: string;
+  teamName: string;
+  title: string;
+  category: string;
+  problem: string;
+  solution: string;
+  teammates: string;
+  createdAt: number;
+}
+
+export interface Reward {
+  id: number;
+  title: string;
+  description: string;
+  cost: number;
+  left: number | null;
+}
+
+export interface StoreResponse {
+  rewards: Reward[];
+  redemptions: { id: number; title: string; cost: number; status: ClaimStatus; createdAt: number }[];
+  wallet: Wallet;
+}
+
+export interface PersonRow {
+  code: string;
+  name: string;
+  teamId: string;
+  teamName: string;
+  department: Department | null;
+  isManager: number;
+  jobTitle: string;
+  knowledge: number;
+  ai: number;
+  missions: number;
+  total: number;
+  modulesPassed: number;
+  tracksCompleted: number;
+  lastActivity: number | null;
+}
+
+export interface TeamDashboard {
+  teamName: string;
+  participation: number;
+  members: PersonRow[];
+  pendingCapstones: PendingCapstone[];
+  pendingImprovements: PendingImprovement[];
+  pendingClaims: PendingClaim[];
+}
+
 export interface AdminOverview {
-  counts: { employees: number; active: number; attempts: number; noDepartment: number };
+  counts: {
+    employees: number;
+    active: number;
+    attempts: number;
+    noDepartment: number;
+    managers: number;
+    profiles: number;
+  };
+  pendingImprovements: PendingImprovement[];
+  topImprovements: {
+    id: number;
+    employeeName: string;
+    teamName: string;
+    title: string;
+    category: string;
+    ease: number;
+    impact: number;
+    points: number;
+  }[];
+  rewards: { id: number; title: string; cost: number; stock: number | null; claimed: number }[];
+  pendingRedemptions: {
+    id: number;
+    employeeCode: string;
+    employeeName: string;
+    teamName: string;
+    title: string;
+    cost: number;
+    createdAt: number;
+  }[];
   quizzes: (Omit<QuizSummary, 'open' | 'result'> & { attempts: number })[];
   activities: { id: number; week: number; kind: ActivityKind; title: string; points: number; approved: number }[];
   pendingClaims: PendingClaim[];
   pendingCapstones: PendingCapstone[];
-  tracks: { id: string; title: string; audience: 'all' | Department; started: number; completed: number }[];
+  tracks: { id: string; title: string; audience: Audience; started: number; completed: number }[];
   teams: TeamStanding[];
   units: { id: string; name: string; members: number }[];
   campaign: CampaignStatus;
