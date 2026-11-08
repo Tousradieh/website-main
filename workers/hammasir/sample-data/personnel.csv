@@ -1,0 +1,25 @@
+کد پرسنلی,نام,شناسه واحد/کارگاه,واحد سازمانی,مدیر
+9001,سرپرست نمونه گلبهار,golbahar,plants,مدیر
+9002,اپراتور نمونه کارخانه گلبهار,golbahar,plants,
+9003,کارشناس نمونه آزمایشگاه گلبهار,golbahar,plants,
+9004,اپراتور نمونه سنگ‌شکن قوچان,quchan,plants,
+9005,اپراتور نمونه بچینگ شاندیز,shandiz,plants,
+9006,رئیس نمونه کارگاه آزادراه,mashhad-chenaran,technical,مدیر
+9007,مترور نمونه آزادراه,mashhad-chenaran,technical,
+9008,نقشه‌بردار نمونه آزادراه,mashhad-chenaran,technical,
+9009,اپراتور نمونه فینیشر آزادراه,mashhad-chenaran,machinery,
+9010,راننده نمونه کامیون آزادراه,mashhad-chenaran,machinery,
+9011,سرپرست نمونه کارگاه سرایان,sarayan,technical,مدیر
+9012,اپراتور نمونه گریدر سرایان,sarayan,machinery,
+9013,انباردار نمونه کارگاه سرایان,sarayan,finance,
+9014,مدیر نمونه تعمیرگاه مرکزی,central-workshop,machinery,مدیر
+9015,کارشناس نمونه PM,central-workshop,machinery,
+9016,کارشناس نمونه دفتر فنی ستاد,hq-technical,technical,
+9017,مدیر نمونه مالی,hq-finance,finance,مدیر
+9018,حسابدار نمونه,hq-finance,finance,
+9019,کارشناس نمونه مناقصات,hq-commerce,sales,
+9020,کارشناس نمونه فروش مصالح,hq-commerce,sales,
+9021,کارشناس نمونه منابع انسانی,hq-hr,hr,
+9022,کارشناس نمونه HSE,hq-hr,hr,
+9023,پژوهشگر نمونه R&D,hq-rnd,rnd,
+9024,کارشناس نمونه دفتر استراتژی,hq-strategy,strategy,مدیر

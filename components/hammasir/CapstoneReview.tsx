@@ -8,12 +8,14 @@ import { faNumber, hammasirApi, type PendingCapstone } from '@/lib/hammasir';
 
 interface CapstoneReviewProps {
   token: string;
+  /** '/api/admin' for the strategy team, '/api/team' for a manager's own unit. */
+  basePath?: string;
   capstones: PendingCapstone[];
   onReviewed: () => void;
 }
 
 /** Approve or reject track final projects, with optional feedback shown to the employee. */
-export default function CapstoneReview({ token, capstones, onReviewed }: CapstoneReviewProps) {
+export default function CapstoneReview({ token, basePath = '/api/admin', capstones, onReviewed }: CapstoneReviewProps) {
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function CapstoneReview({ token, capstones, onReviewed }: Capston
     }
     setBusy(key);
     setError(null);
-    const result = await hammasirApi('/api/admin/capstones/review', {
+    const result = await hammasirApi(`${basePath}/capstones/review`, {
       token,
       body: { employeeCode: capstone.employeeCode, trackId: capstone.trackId, approve, feedback: feedback[key] ?? '' },
     });

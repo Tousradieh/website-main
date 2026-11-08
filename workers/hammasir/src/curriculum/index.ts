@@ -1,10 +1,14 @@
-import type { Department, Module, Question, Track } from './types';
+import type { Capstone, Department, Module, Question, Track } from './types';
 import { strategyTrack } from './strategy';
 import { managementTrack } from './management';
-import { hrTrack } from './hr';
 import { technicalTrack } from './technical';
+import { plantsTrack } from './plants';
+import { machineryTrack } from './machinery';
 import { financeTrack } from './finance';
 import { salesTrack } from './sales';
+import { hrTrack } from './hr';
+import { rndTrack } from './rnd';
+import { osmTrack } from './osm';
 import { aiTrack } from './ai';
 
 export * from './types';
@@ -55,14 +59,18 @@ function withShuffledOptions(track: Track): Track {
   };
 }
 
-/** Display order: the shared strategy track, the department tracks, then AI. */
+/** Display order: the shared strategy track, the managers' programme, the eight units, then AI. */
 export const TRACKS: Track[] = [
   strategyTrack,
   managementTrack,
-  hrTrack,
   technicalTrack,
+  plantsTrack,
+  machineryTrack,
   financeTrack,
   salesTrack,
+  hrTrack,
+  rndTrack,
+  osmTrack,
   aiTrack,
 ].map(withShuffledOptions);
 
@@ -81,7 +89,22 @@ export function findModule(track: Track, moduleId: string): Module | undefined {
   return track.modules.find((module) => module.id === moduleId);
 }
 
-/** Shared tracks for everyone, plus the employee's own department track. */
-export function canAccess(track: Track, department: Department | null): boolean {
-  return track.audience === 'all' || track.audience === department;
+export interface Learner {
+  department: Department | null;
+  isManager: boolean;
+}
+
+/** Shared tracks for everyone, the managers' programme for managers, and the person's own unit track. */
+export function canAccess(track: Track, learner: Learner): boolean {
+  if (track.audience === 'all') return true;
+  if (track.audience === 'managers') return learner.isManager;
+  return track.audience === learner.department;
+}
+
+/** The final assignment for this person: a manager or unit variant when the track has one. */
+export function capstoneFor(track: Track, learner: Learner): Capstone {
+  const variant =
+    (learner.isManager ? track.capstoneVariants?.managers : undefined) ??
+    (learner.department ? track.capstoneVariants?.[learner.department] : undefined);
+  return variant ? { ...variant, points: track.capstone.points } : track.capstone;
 }

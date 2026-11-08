@@ -8,15 +8,19 @@ import {
   ChevronLeft,
   Clock,
   Compass,
+  Factory,
+  FlaskConical,
   Handshake,
   HardHat,
   Sparkles,
+  Target,
+  Truck,
   Users,
   type LucideIcon,
 } from 'lucide-react';
 import { useHammasirData } from '@/hooks/useHammasirData';
 import {
-  departmentLabel,
+  audienceLabel,
   faNumber,
   HAMMASIR_APP_ID,
   type Department,
@@ -36,6 +40,10 @@ export const TRACK_ICONS: Record<TrackIcon, LucideIcon> = {
   calculator: Calculator,
   handshake: Handshake,
   sparkles: Sparkles,
+  factory: Factory,
+  truck: Truck,
+  flask: FlaskConical,
+  target: Target,
 };
 
 interface TracksPanelProps {
@@ -99,7 +107,7 @@ export default function TracksPanel({ token, onSessionExpired }: TracksPanelProp
     <div className="space-y-3">
       {data.department ? null : (
         <p className="rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-brand-900 leading-relaxed">
-          حوزه کاری شما هنوز ثبت نشده است. مسیر تخصصی واحد شما پس از ثبت توسط منابع انسانی نمایش داده می‌شود.
+          واحد سازمانی شما هنوز ثبت نشده است. مسیر تخصصی واحد شما پس از ثبت توسط منابع انسانی نمایش داده می‌شود.
         </p>
       )}
       <ul className="space-y-3">
@@ -125,7 +133,8 @@ export default function TracksPanel({ token, onSessionExpired }: TracksPanelProp
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="block text-xs text-brand-700 font-medium">
-                      {track.audience === 'all' ? 'همه همکاران' : `مسیر تخصصی · ${departmentLabel(track.audience)}`}
+                      {audienceLabel(track.audience)}
+                      {track.share === 'ai' ? ' · امتیاز مهارت هوش مصنوعی' : ''}
                     </span>
                     <span className="block font-bold text-brand-900 mt-0.5">{track.title}</span>
                     <span className="text-sm text-muted-foreground mt-1 leading-relaxed line-clamp-2">

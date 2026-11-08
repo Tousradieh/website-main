@@ -8,8 +8,9 @@ import { useStoredToken } from '@/hooks/useStoredToken';
 import {
   activityKind,
   adminToken,
+  audienceLabel,
   DEPARTMENTS,
-  departmentLabel,
+  improvementCategoryLabel,
   faNumber,
   hammasirApi,
   type AdminOverview,
@@ -18,7 +19,10 @@ import {
 import ActivityForm from './ActivityForm';
 import CapstoneReview from './CapstoneReview';
 import ClaimReview from './ClaimReview';
+import AdminPeople from './AdminPeople';
+import AdminStore from './AdminStore';
 import ImportBox from './ImportBox';
+import ImprovementReview from './ImprovementReview';
 import QuizForm from './QuizForm';
 
 function fetchOverview(token: string) {
@@ -117,10 +121,26 @@ export default function AdminPanel() {
     );
   }
 
-  const { counts, campaign, teams, units, quizzes, activities, pendingClaims, pendingCapstones, tracks } = overview;
+  const {
+    counts,
+    campaign,
+    teams,
+    units,
+    quizzes,
+    activities,
+    pendingClaims,
+    pendingCapstones,
+    pendingImprovements,
+    topImprovements,
+    rewards,
+    pendingRedemptions,
+    tracks,
+  } = overview;
   const stats = [
     { label: 'پرسنل ثبت‌شده', value: counts.employees },
     { label: 'پرسنل فعال', value: counts.active },
+    { label: 'مدیران و سرپرستان', value: counts.managers },
+    { label: 'پروفایل تکمیل‌شده', value: counts.profiles },
     { label: 'آزمون‌های پاسخ‌داده‌شده', value: counts.attempts },
     { label: 'هفته کمپین', value: campaign.week },
   ];
@@ -140,7 +160,7 @@ export default function AdminPanel() {
         </p>
       ) : null}
 
-      <dl className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <dl className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-card rounded-2xl border border-border p-4">
             <dt className="text-xs text-muted-foreground">{stat.label}</dt>
@@ -156,9 +176,54 @@ export default function AdminPanel() {
         </p>
       ) : null}
 
+      <ImprovementReview token={token} projects={pendingImprovements} onReviewed={refresh} />
+
+      {topImprovements.length ? (
+        <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-top-improvements">
+          <h2 id="admin-top-improvements" className="font-heading font-bold text-brand-900 text-lg mb-3">
+            رتبه‌بندی پروژه‌های بهبود (۱۲ پروژه برتر جایزه می‌گیرند)
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-muted-foreground text-xs">
+                <tr className="text-right">
+                  <th className="py-2 px-2 font-medium">رتبه</th>
+                  <th className="py-2 px-2 font-medium">پروژه</th>
+                  <th className="py-2 px-2 font-medium">فرد و واحد</th>
+                  <th className="py-2 px-2 font-medium">سهولت</th>
+                  <th className="py-2 px-2 font-medium">اثر</th>
+                  <th className="py-2 px-2 font-medium">امتیاز</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {topImprovements.map((project, i) => (
+                  <tr key={project.id} className={i < 12 ? 'bg-gold/5' : ''}>
+                    <td className="py-2 px-2">{faNumber(i + 1)}</td>
+                    <td className="py-2 px-2 text-brand-900">
+                      {project.title}
+                      <span className="block text-xs text-muted-foreground">{improvementCategoryLabel(project.category)}</span>
+                    </td>
+                    <td className="py-2 px-2 text-xs">
+                      {project.employeeName} · {project.teamName}
+                    </td>
+                    <td className="py-2 px-2">{faNumber(project.ease)}</td>
+                    <td className="py-2 px-2">{faNumber(project.impact)}</td>
+                    <td className="py-2 px-2 font-bold">{faNumber(project.points)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
+
       <CapstoneReview token={token} capstones={pendingCapstones} onReviewed={refresh} />
 
       <ClaimReview token={token} claims={pendingClaims} onReviewed={refresh} />
+
+      <AdminStore token={token} rewards={rewards} pending={pendingRedemptions} onChanged={refresh} />
+
+      <AdminPeople token={token} />
 
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-tracks">
         <h2 id="admin-tracks" className="font-heading font-bold text-brand-900 text-lg mb-4">
@@ -179,7 +244,7 @@ export default function AdminPanel() {
                 <tr key={track.id}>
                   <td className="py-2 px-2 text-brand-900">{track.title}</td>
                   <td className="py-2 px-2 whitespace-nowrap">
-                    {track.audience === 'all' ? 'همه' : departmentLabel(track.audience)}
+                    {audienceLabel(track.audience)}
                   </td>
                   <td className="py-2 px-2">{faNumber(track.started)}</td>
                   <td className="py-2 px-2">{faNumber(track.completed)}</td>
@@ -240,8 +305,8 @@ export default function AdminPanel() {
           token={token}
           endpoint="/api/admin/employees"
           title="پرسنل"
-          columns={`کد پرسنلی، نام، شناسه واحد، رمز ۶ تا ۸ رقمی (خالی = رمز قبلی بماند)، حوزه کاری: ${DEPARTMENTS.map((d) => `${d.value} (${d.label})`).join('، ')}`}
-          example={'1001,علی رضایی,golbahar,482193,technical\n1002,مریم احمدی,technical-office,739051,finance'}
+          columns={`کد پرسنلی، نام، شناسه واحد/کارگاه، رمز ۶ تا ۸ رقمی (خالی = رمز قبلی بماند)، واحد سازمانی: ${DEPARTMENTS.map((d) => `${d.value} (${d.label})`).join('، ')}، ستون ششم «مدیر» برای مدیران و سرپرستان`}
+          example={'1001,علی رضایی,golbahar,482193,plants\n1002,مریم احمدی,hq-finance,739051,finance,مدیر'}
           onImported={refresh}
         />
         <ImportBox

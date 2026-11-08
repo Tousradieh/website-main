@@ -34,6 +34,13 @@ export interface Employee {
   team_id: string;
   team_name: string;
   department: Department | null;
+  is_manager: number;
+  job_title: string;
+  mobile: string;
+}
+
+export function learnerOf(employee: Employee) {
+  return { department: employee.department, isManager: employee.is_manager === 1 };
 }
 
 export function hashPin(env: Env, code: string, pin: string): Promise<string> {
@@ -119,7 +126,7 @@ export async function requireEmployee(env: Env, request: Request): Promise<Emplo
   const token = bearer(request);
   if (!token) throw new HttpError(401, ERRORS.unauthorized);
   const row = await env.DB.prepare(
-    `SELECT e.code, e.name, e.team_id, t.name AS team_name, e.department
+    `SELECT e.code, e.name, e.team_id, t.name AS team_name, e.department, e.is_manager, e.job_title, e.mobile
      FROM sessions s
      JOIN employees e ON e.code = s.employee_code
      JOIN teams t ON t.id = e.team_id

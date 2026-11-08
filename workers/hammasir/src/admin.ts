@@ -2,7 +2,8 @@ import { hashPin } from './auth';
 import { ACTIVITY_KINDS, type ActivityKind, type QuizQuestion } from './campaign';
 import { DEPARTMENTS, type Department } from './curriculum';
 import { CAMPAIGN_WEEKS, campaignStatus, cleanText, ERRORS, HttpError, normalizeDigits, readJson, type Env } from './http';
-import { pendingCapstones, trackStats } from './learning';
+import { pendingImprovements, storeAdmin, topImprovements } from './engagement';
+import { pendingCapstones, reviewerScope, trackStats, type Reviewer } from './learning';
 import { activeCount, leaderboard } from './points';
 
 const MAX_IMPORT_ROWS = 2000;
@@ -69,11 +70,17 @@ export async function importEmployees(env: Env, text: string): Promise<ImportRes
   const teamIds = new Set(teams.map((t) => t.id));
 
   for (const [i, row] of parseRows(text, ['code', 'کد']).entries()) {
-    const [rawCode, rawName, teamId, rawPin, rawDepartment] = row;
+    const [rawCode, rawName, teamId, rawPin, rawDepartment, rawManager] = row;
     const code = normalizeDigits(rawCode ?? '');
     const name = (rawName ?? '').slice(0, 100);
     const pin = normalizeDigits(rawPin ?? '');
-    const department = (rawDepartment ?? '').toLowerCase() || null;
+    let department = (rawDepartment ?? '').toLowerCase() || null;
+    // Sixth column marks managers/supervisors; the old "management" department means the same.
+    let isManager = ['1', 'yes', 'manager', 'مدیر', 'بله', 'سرپرست'].includes((rawManager ?? '').trim().toLowerCase()) ? 1 : 0;
+    if (department === 'management') {
+      department = null;
+      isManager = 1;
+    }
     if (!code || !name || !teamId) {
       errors.push(`ردیف ${i + 1}: کد، نام و واحد الزامی است`);
       continue;
@@ -98,22 +105,20 @@ export async function importEmployees(env: Env, text: string): Promise<ImportRes
     if (pin) {
       statements.push(
         env.DB.prepare(
-          `INSERT INTO employees (code, name, team_id, department, pin_hash) VALUES (?, ?, ?, ?, ?)
+          `INSERT INTO employees (code, name, team_id, department, is_manager, pin_hash) VALUES (?, ?, ?, ?, ?, ?)
            ON CONFLICT(code) DO UPDATE SET name = excluded.name, team_id = excluded.team_id,
-             department = excluded.department, pin_hash = excluded.pin_hash, failed_logins = 0, locked_until = 0`,
-        ).bind(code, name, teamId, department, await hashPin(env, code, pin)),
+             department = excluded.department, is_manager = excluded.is_manager, pin_hash = excluded.pin_hash,
+             failed_logins = 0, locked_until = 0`,
+        ).bind(code, name, teamId, department, isManager, await hashPin(env, code, pin)),
       );
       // A new PIN signs the person out everywhere.
       statements.push(env.DB.prepare('DELETE FROM sessions WHERE employee_code = ?').bind(code));
     } else {
       // Blank PIN: update an existing person, keep their PIN.
       statements.push(
-        env.DB.prepare('UPDATE employees SET name = ?, team_id = ?, department = ? WHERE code = ?').bind(
-          name,
-          teamId,
-          department,
-          code,
-        ),
+        env.DB.prepare(
+          'UPDATE employees SET name = ?, team_id = ?, department = ?, is_manager = ? WHERE code = ?',
+        ).bind(name, teamId, department, isManager, code),
       );
     }
   }
@@ -245,28 +250,34 @@ export async function deleteActivity(env: Env, id: number) {
   return { ok: true };
 }
 
-export async function reviewClaim(env: Env, request: Request) {
+export async function reviewClaim(env: Env, request: Request, reviewer: Reviewer) {
   const body = await readJson<{ employeeCode?: unknown; activityId?: unknown; approve?: unknown }>(request);
   if (typeof body.employeeCode !== 'string' || !Number.isInteger(body.activityId) || typeof body.approve !== 'boolean') {
     throw new HttpError(400, ERRORS.badRequest);
   }
+  const scope = reviewerScope(reviewer);
   const result = await env.DB.prepare(
     `UPDATE activity_claims SET status = ?, reviewed_at = ?
-     WHERE employee_code = ? AND activity_id = ? AND status = 'pending'`,
+     WHERE employee_code = ? AND activity_id = ? AND status = 'pending'
+       AND employee_code IN (SELECT e.code FROM employees e WHERE ${scope.sql})`,
   )
-    .bind(body.approve ? 'approved' : 'rejected', Date.now(), body.employeeCode, body.activityId)
+    .bind(body.approve ? 'approved' : 'rejected', Date.now(), body.employeeCode, body.activityId, ...scope.binds)
     .run();
   if (!result.meta.changes) throw new HttpError(404, 'این درخواست قبلاً بررسی شده است');
   return { ok: true };
 }
 
 export async function overview(env: Env) {
-  const [counts, active, quizzes, teams, units, activities, claims, capstones, tracks] = await Promise.all([
+  const admin: Reviewer = { kind: 'admin' };
+  const [counts, active, quizzes, teams, units, activities, claims, capstones, tracks, improvements, top, store] =
+    await Promise.all([
     env.DB.prepare(
       `SELECT (SELECT COUNT(*) FROM employees) AS employees,
               (SELECT COUNT(*) FROM employees WHERE department IS NULL) AS noDepartment,
+              (SELECT COUNT(*) FROM employees WHERE is_manager = 1) AS managers,
+              (SELECT COUNT(*) FROM employees WHERE job_title != '' AND mobile != '') AS profiles,
               (SELECT COUNT(*) FROM quiz_attempts) + (SELECT COUNT(*) FROM module_results) AS attempts`,
-    ).first<{ employees: number; noDepartment: number; attempts: number }>(),
+    ).first<{ employees: number; noDepartment: number; managers: number; profiles: number; attempts: number }>(),
     activeCount(env),
     env.DB.prepare(
       `SELECT q.id, q.week, q.title, q.points, json_array_length(q.questions) AS questionCount,
@@ -292,8 +303,11 @@ export async function overview(env: Env) {
        WHERE c.status = 'pending'
        ORDER BY c.created_at`,
     ).all(),
-    pendingCapstones(env),
+    pendingCapstones(env, admin),
     trackStats(env),
+    pendingImprovements(env, admin),
+    topImprovements(env),
+    storeAdmin(env),
   ]);
   return {
     ok: true,
@@ -302,6 +316,9 @@ export async function overview(env: Env) {
     activities: activities.results,
     pendingClaims: claims.results,
     pendingCapstones: capstones,
+    pendingImprovements: improvements,
+    topImprovements: top,
+    ...store,
     tracks,
     teams,
     units: units.results,

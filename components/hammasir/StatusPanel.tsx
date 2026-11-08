@@ -1,10 +1,11 @@
 'use client';
 
-import { Brain, HardHat, Users } from 'lucide-react';
+import { Brain, HardHat, MessageCircleHeart, Sparkles, Users } from 'lucide-react';
 import { useHammasirData } from '@/hooks/useHammasirData';
 import { CAMPAIGN_PHASES, departmentLabel, faNumber, type MeResponse } from '@/lib/hammasir';
 import { cn } from '@/lib/utils';
 import PanelState from './PanelState';
+import ProfileForm from './ProfileForm';
 
 interface StatusPanelProps {
   token: string;
@@ -15,16 +16,17 @@ export default function StatusPanel({ token, onSessionExpired }: StatusPanelProp
   const { data, error, reload } = useHammasirData<MeResponse>('/api/me', token, onSessionExpired);
   if (!data) return <PanelState error={error} onRetry={reload} />;
 
-  const { employee, wallet, missions, pendingClaims, team, teamCount, campaign } = data;
+  const { employee, wallet, messages, missions, pendingClaims, team, teamCount, campaign } = data;
   const phase = CAMPAIGN_PHASES[campaign.phase - 1];
   const progress = Math.round((campaign.week / campaign.totalWeeks) * 100);
 
   return (
     <div className="space-y-4">
       {/* Wallet */}
-      <section className="rounded-2xl bg-brand-900 text-white p-6" aria-labelledby="wallet-heading">
+      <section className="rounded-2xl bg-brand-900 text-white p-5 sm:p-6" aria-labelledby="wallet-heading">
         <p className="text-brand-100/70 text-sm">
           {employee.name} · {employee.teamName} · {departmentLabel(employee.department)}
+          {employee.isManager ? ' · مدیر/سرپرست' : ''}
         </p>
         <h2 id="wallet-heading" className="mt-3 text-sm text-brand-100">
           کیف پول رادکوین
@@ -32,28 +34,51 @@ export default function StatusPanel({ token, onSessionExpired }: StatusPanelProp
         <p className="font-heading font-black text-4xl mt-1">
           {faNumber(wallet.total)} <span className="text-lg font-bold text-gold">رادکوین</span>
         </p>
-        <div className="grid grid-cols-2 gap-3 mt-5">
-          <div className="rounded-xl bg-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-xs text-brand-100">
-              <Brain size={14} aria-hidden="true" />
-              امتیاز دانش (آموزش)
+        <p className="text-xs text-brand-100/70 mt-1">
+          قابل خرج در فروشگاه جوایز: {faNumber(wallet.balance)}
+          {wallet.spent ? ` · خرج‌شده یا رزرو: ${faNumber(wallet.spent)}` : ''}
+        </p>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-5">
+          {[
+            { label: 'دانش استراتژیک', weight: '۲۰٪', value: wallet.knowledge, Icon: Brain },
+            { label: 'هوش مصنوعی', weight: '۲۰٪', value: wallet.ai, Icon: Sparkles },
+            { label: 'ماموریت عملیاتی', weight: '۶۰٪', value: wallet.missions, Icon: HardHat },
+          ].map(({ label, weight, value, Icon }) => (
+            <div key={label} className="rounded-xl bg-white/10 p-3">
+              <Icon size={16} className="text-brand-100" aria-hidden="true" />
+              <p className="mt-1 text-[11px] sm:text-xs text-brand-100 leading-snug">{label}</p>
+              <p className="font-bold text-lg sm:text-xl mt-1">{faNumber(value)}</p>
+              <p className="text-[10px] text-brand-100/60">سهم {weight}</p>
             </div>
-            <p className="font-bold text-xl mt-1">{faNumber(wallet.knowledge)}</p>
-          </div>
-          <div className="rounded-xl bg-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-xs text-brand-100">
-              <HardHat size={14} aria-hidden="true" />
-              امتیاز ماموریت‌ها
-            </div>
-            <p className="font-bold text-xl mt-1">{faNumber(wallet.missions)}</p>
-          </div>
+          ))}
         </div>
         {pendingClaims > 0 ? (
           <p className="mt-3 text-xs text-brand-100/80">
-            {faNumber(pendingClaims)} مورد (دوره، کلاس یا پروژه پایانی) در انتظار تأیید مدیر است.
+            {faNumber(pendingClaims)} مورد (دوره، کلاس، پروژه پایانی یا پروژه بهبود) در انتظار تأیید مدیر است.
           </p>
         ) : null}
       </section>
+
+      {!employee.jobTitle || !employee.mobile ? (
+        <ProfileForm token={token} initial={employee} onSaved={reload} onSessionExpired={onSessionExpired} />
+      ) : null}
+
+      {messages.length ? (
+        <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="messages-heading">
+          <h2 id="messages-heading" className="flex items-center gap-2 text-brand-900 font-heading font-bold">
+            <MessageCircleHeart size={18} className="text-gold" aria-hidden="true" />
+            پیام‌های تشویقی
+          </h2>
+          <ul className="mt-3 space-y-2">
+            {messages.map((message) => (
+              <li key={message.createdAt} className="rounded-xl bg-brand-50 px-4 py-3 text-sm leading-relaxed">
+                <p className="text-brand-900">{message.text}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{message.fromName}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Campaign progress */}
       <section className="bg-card rounded-2xl border border-border p-6" aria-labelledby="campaign-heading">

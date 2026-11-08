@@ -5,9 +5,13 @@ import { cn } from '@/lib/utils';
 import QuizPanel from './QuizPanel';
 import ActivityPanel from './ActivityPanel';
 import TracksPanel from './TracksPanel';
+import GlossaryPanel from './GlossaryPanel';
+import PromptLibrary from './PromptLibrary';
 
 const SECTIONS = [
   { id: 'tracks', label: 'مسیرهای آموزشی' },
+  { id: 'glossary', label: 'فرهنگ‌نامه استراتژی' },
+  { id: 'prompts', label: 'بانک پرامپت AI' },
   { id: 'activities', label: 'دوره‌ها و کلاس‌ها' },
   { id: 'quizzes', label: 'کوییزهای هفتگی' },
 ] as const;
@@ -41,6 +45,8 @@ export default function LearnPanel({ token, onSessionExpired }: LearnPanelProps)
         ))}
       </div>
       {section === 'tracks' ? <TracksPanel token={token} onSessionExpired={onSessionExpired} /> : null}
+      {section === 'glossary' ? <GlossaryPanel /> : null}
+      {section === 'prompts' ? <PromptLibrary /> : null}
       {section === 'activities' ? <ActivityPanel token={token} onSessionExpired={onSessionExpired} /> : null}
       {section === 'quizzes' ? <QuizPanel token={token} onSessionExpired={onSessionExpired} /> : null}
     </div>
