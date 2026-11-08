@@ -112,6 +112,8 @@ export interface CsrInitiative {
 
 export interface Certificate {
   id: string;
+  /** Formal certification / membership vs. a client letter of appreciation. */
+  kind: 'certification' | 'appreciation';
   title: string;
   issuer: string;
   year?: string;

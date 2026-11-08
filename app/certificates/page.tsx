@@ -15,7 +15,7 @@ export default function CertificatesPage() {
         ariaLabel="سربرگ صفحه گواهی‌نامه‌ها"
         eyebrow="اعتبار حرفه‌ای"
         title="گواهی‌نامه‌ها و تقدیرنامه‌ها"
-        description="مجموعه گواهی‌ها و تقدیرنامه‌های دریافتی توس‌رادیه از کارفرمایان و مراجع معتبر."
+        description="گواهی سیستم مدیریت کیفیت، عضویت صنفی و تقدیرنامه‌های کارفرمایان ملی و استانی راه در سه استان خراسان."
       />
 
       <section className="py-20 md:py-28 bg-background" aria-labelledby="certificates-heading">
