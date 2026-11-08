@@ -1,0 +1,19 @@
+name = "tousradieh-hammasir"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# Create once with `npx wrangler d1 create hammasir` and paste the id here.
+[[d1_databases]]
+binding = "DB"
+database_name = "hammasir"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[vars]
+# First day of the 3-month campaign (Gregorian, YYYY-MM-DD). Week 1 starts here.
+CAMPAIGN_START = "2026-12-01"
+# Optional CORS origin (defaults to *). Example:
+# ALLOWED_ORIGIN = "https://tousradieh.com"
+
+# Set secrets (not committed):
+#   npx wrangler secret put ADMIN_TOKEN   # password for the /hammasir/admin page
+#   npx wrangler secret put PIN_PEPPER    # random string mixed into PIN hashes

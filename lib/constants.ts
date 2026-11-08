@@ -71,6 +71,11 @@ export type ProjectFilter = (typeof PROJECT_FILTERS)[number]['value'];
 
 export const EMPLOYEE_PORTAL_LINKS = [
   {
+    label: 'هم‌مسیر توس',
+    href: '/hammasir',
+    description: 'کمپین آماده‌سازی؛ وضعیت امتیاز، کوییزها و لیگ کارگاه‌ها',
+  },
+  {
     label: 'سامانه اتوماسیون',
     href: 'http://auto.tousradieh.com',
     description: 'ورود پرسنل به سامانه اتوماسیون',
