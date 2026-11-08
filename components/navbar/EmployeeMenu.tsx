@@ -56,8 +56,7 @@ export default function EmployeeMenu({
             <a
               key={link.href}
               href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               onClick={onClose}
               className={cn(
                 'block rounded-md px-3 py-3 transition-colors hover:bg-white/10',

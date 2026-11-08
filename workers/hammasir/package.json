@@ -1,0 +1,19 @@
+{
+  "name": "tousradieh-hammasir-worker",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "db:seed:local": "wrangler d1 execute hammasir --local --file=seed.sql",
+    "db:migrate": "wrangler d1 migrations apply hammasir --remote",
+    "db:migrate:local": "wrangler d1 migrations apply hammasir --local",
+    "typecheck": "tsc -p .",
+    "check:curriculum": "esbuild scripts/check-curriculum.ts --bundle --platform=node --log-level=warning | node"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260722.1",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.14.0"
+  }
+}

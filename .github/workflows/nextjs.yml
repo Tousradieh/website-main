@@ -78,6 +78,8 @@ jobs:
           # Cloudflare Worker URL for materials leads (set in repo Secrets)
           NEXT_PUBLIC_LEADS_API_URL: ${{ secrets.NEXT_PUBLIC_LEADS_API_URL }}
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          # Cloudflare Worker URL for the هم‌مسیر توس campaign (workers/hammasir)
+          NEXT_PUBLIC_HAMMASIR_API_URL: ${{ secrets.NEXT_PUBLIC_HAMMASIR_API_URL }}
           NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://tousradieh.com' }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
