@@ -1,19 +1,19 @@
 name = "tousradieh-hammasir"
 main = "src/index.ts"
-compatibility_date = "2024-12-01"
+compatibility_date = "2024-10-07"
 
 # Create once with `npx wrangler d1 create hammasir` and paste the id here.
 [[d1_databases]]
 binding = "DB"
 database_name = "hammasir"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "c9c28548-7dbe-4429-9cfb-e889ba6c7102"
 migrations_dir = "migrations"
 
 [vars]
 # First day of the 3-month campaign (Gregorian, YYYY-MM-DD). Week 1 starts here.
 CAMPAIGN_START = "2026-12-01"
 # Site origins allowed to call the API, comma-separated (defaults to *). Example:
-# ALLOWED_ORIGIN = "https://tousradieh.com,https://www.tousradieh.com"
+ALLOWED_ORIGIN = "https://tousradieh.com,https://www.tousradieh.com"
 
 # Set secrets (not committed):
 #   npx wrangler secret put ADMIN_TOKEN   # password for the /hammasir/admin page (16+ chars)
