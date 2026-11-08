@@ -21,7 +21,7 @@ export default function ContactPage() {
         ariaLabel="سربرگ صفحه تماس"
         eyebrow="ارتباط با ما"
         title="تماس با ما"
-        description="برای استعلام پروژه، مناقصه یا خرید مصالح با دفتر مرکزی توس‌رادیه در مشهد در ارتباط باشید."
+        description="برای استعلام پروژه، مناقصه یا تأمین مصالح با دفتر مرکزی توس‌رادیه در مشهد در ارتباط باشید."
       />
 
       <section className="py-16 md:py-24 bg-background" aria-labelledby="contact-info-heading">

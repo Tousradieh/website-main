@@ -1,5 +1,8 @@
 'use client';
 
+// Materials (B2B) request form — temporarily disabled: not rendered on any page.
+// The /cooperation form (PartnershipForm) replaces it for now; re-enable by rendering it again.
+
 import TurnstileWidget from '@/components/TurnstileWidget';
 import FormPrivacyNote from '@/components/FormPrivacyNote';
 import { Button } from '@/components/ui/button';

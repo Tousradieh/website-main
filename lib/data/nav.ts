@@ -4,7 +4,7 @@ export const navItems: NavItem[] = [
   { label: 'خانه', href: '/' },
   { label: 'درباره ما', href: '/about' },
   { label: 'پروژه‌ها', href: '/projects' },
-  { label: 'مصالح و توانمندی‌ها', href: '/materials' },
+  { label: 'تجهیزات و توانمندی‌ها', href: '/materials' },
   { label: 'گواهی‌نامه‌ها', href: '/certificates' },
   { label: 'موقعیت‌های شغلی', href: '/careers' },
   { label: 'تماس با ما', href: '/contact' },

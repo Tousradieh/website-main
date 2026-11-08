@@ -15,8 +15,8 @@ export default function Footer() {
               <span className="text-white font-bold text-xl">{SITE_NAME}</span>
             </div>
             <p className="text-sm leading-relaxed text-brand-100/80 max-w-sm">
-              شرکت راه‌سازی {SITE_NAME} با بیش از ۳۰ سال تجربه، پیشرو در احداث و
-              بازسازی راه‌ها، پل‌ها و زیرساخت‌های جاده‌ای کشور است.
+              شرکت ساختمانی {SITE_NAME}، پیمانکار یکپارچه راه، آزادراه و ریلی با
+              بیش از سه دهه سابقه در خراسان؛ از تولید مصالح تا اجرای نهایی پروژه.
             </p>
             <div className="mt-6 flex flex-col gap-3 text-sm">
               <a

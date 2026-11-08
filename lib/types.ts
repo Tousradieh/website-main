@@ -59,12 +59,29 @@ export interface JobPosition {
   requirements: string[];
 }
 
-export interface Material {
+/** Production unit kinds shown on the facilities page. */
+export type FacilityType = 'quarry' | 'crusher' | 'asphalt' | 'batching';
+
+export interface FacilityCategory {
+  id: FacilityType;
+  title: string;
+  description: string;
+  outputs: string[];
+}
+
+export interface ProductionSite {
   id: string;
   name: string;
+  province: 'خراسان رضوی' | 'خراسان جنوبی';
+  units: FacilityType[];
+  capacity: string;
+  note?: string;
+}
+
+export interface SupportCapability {
+  id: string;
+  title: string;
   description: string;
-  specs: string[];
-  image: string;
 }
 
 export interface Stat {

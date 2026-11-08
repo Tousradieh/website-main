@@ -2,6 +2,7 @@ interface Env {
   BALE_BOT_TOKEN: string;
   BALE_PROCUREMENT_CHAT_ID: string;
   BALE_SALES_CHAT_ID?: string;
+  BALE_PARTNERSHIP_CHAT_ID?: string;
   TURNSTILE_SECRET: string;
   ALLOWED_ORIGIN?: string;
 }
@@ -13,6 +14,7 @@ interface LeadBody {
   materialType?: string;
   quantity?: string;
   topic?: string;
+  cooperationType?: string;
   message?: string;
   recipient?: string;
   turnstileToken?: string;
@@ -23,7 +25,7 @@ const BALE_API_BASE = 'https://tapi.bale.ai';
 const TURNSTILE_VERIFY_URL =
   'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
-type Recipient = 'procurement' | 'sales';
+type Recipient = 'procurement' | 'sales' | 'partnership';
 
 /** Keep keys/labels in sync with website-main/lib/leads.ts MATERIAL_TYPES */
 type MaterialType =
@@ -54,6 +56,17 @@ const contactTopicLabels: Record<ContactTopic, string> = {
   project: 'استعلام پروژه',
   tender: 'مناقصه و همکاری',
   materials: 'خرید مصالح',
+  other: 'سایر',
+};
+
+/** Keep keys/labels in sync with website-main/lib/partnership.ts COOPERATION_TYPES */
+type CooperationType = 'joint-venture' | 'execution' | 'supply' | 'machinery' | 'other';
+
+const cooperationTypeLabels: Record<CooperationType, string> = {
+  'joint-venture': 'مشارکت در پروژه',
+  execution: 'همکاری اجرایی و پیمانکاری',
+  supply: 'تأمین مصالح پروژه',
+  machinery: 'اجاره ماشین‌آلات',
   other: 'سایر',
 };
 
@@ -123,6 +136,15 @@ function validateSales(body: LeadBody): string | null {
   return null;
 }
 
+function validatePartnership(body: LeadBody): string | null {
+  if (!body.contactPerson?.trim()) return 'نام الزامی است';
+  const phoneError = validatePhone(body.phone);
+  if (phoneError) return phoneError;
+  if (!body.cooperationType?.trim()) return 'نوع همکاری الزامی است';
+  if (!body.message?.trim()) return 'شرح همکاری الزامی است';
+  return null;
+}
+
 function formatProcurementMessage(
   lead: Required<
     Pick<
@@ -172,6 +194,35 @@ function formatSalesMessage(
   }
 
   lines.push(`تلفن: ${lead.phone}`, `موضوع: ${topic}`, '', `پیام: ${lead.message}`);
+
+  return lines.join('\n');
+}
+
+function formatPartnershipMessage(
+  lead: Required<Pick<LeadBody, 'contactPerson' | 'phone' | 'cooperationType' | 'message'>> & {
+    companyName?: string;
+  }
+): string {
+  const typeKey = lead.cooperationType as CooperationType;
+  const cooperationType = cooperationTypeLabels[typeKey] ?? lead.cooperationType;
+  const company = lead.companyName?.trim();
+
+  const lines = [
+    '🤝 درخواست جدید همکاری',
+    '',
+    `نام: ${lead.contactPerson}`,
+  ];
+
+  if (company) {
+    lines.push(`شرکت / سازمان: ${company}`);
+  }
+
+  lines.push(
+    `تلفن: ${lead.phone}`,
+    `نوع همکاری: ${cooperationType}`,
+    '',
+    `شرح: ${lead.message}`
+  );
 
   return lines.join('\n');
 }
@@ -229,7 +280,10 @@ async function sendBaleMessage(
 }
 
 function chatIdFor(env: Env, recipient: Recipient): string {
-  if (recipient === 'sales' && env.BALE_SALES_CHAT_ID?.trim()) {
+  if (recipient === 'partnership' && env.BALE_PARTNERSHIP_CHAT_ID?.trim()) {
+    return env.BALE_PARTNERSHIP_CHAT_ID.trim();
+  }
+  if ((recipient === 'sales' || recipient === 'partnership') && env.BALE_SALES_CHAT_ID?.trim()) {
     return env.BALE_SALES_CHAT_ID.trim();
   }
   return env.BALE_PROCUREMENT_CHAT_ID;
@@ -291,18 +345,30 @@ export default {
     }
 
     const recipient = (body.recipient ?? 'procurement') as Recipient;
-    if (recipient !== 'procurement' && recipient !== 'sales') {
+    if (recipient !== 'procurement' && recipient !== 'sales' && recipient !== 'partnership') {
       return json(env, request, { ok: false, error: 'گیرنده نامعتبر است' }, 400);
     }
 
     const validationError =
-      recipient === 'sales' ? validateSales(body) : validateProcurement(body);
+      recipient === 'sales'
+        ? validateSales(body)
+        : recipient === 'partnership'
+          ? validatePartnership(body)
+          : validateProcurement(body);
     if (validationError) {
       return json(env, request, { ok: false, error: validationError }, 400);
     }
 
     const text =
-      recipient === 'sales'
+      recipient === 'partnership'
+        ? formatPartnershipMessage({
+            contactPerson: body.contactPerson!.trim(),
+            phone: body.phone!.trim(),
+            cooperationType: body.cooperationType!.trim(),
+            message: body.message!.trim(),
+            companyName: body.companyName?.trim() ?? '',
+          })
+        : recipient === 'sales'
         ? formatSalesMessage({
             contactPerson: body.contactPerson!.trim(),
             phone: body.phone!.trim(),

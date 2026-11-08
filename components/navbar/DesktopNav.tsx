@@ -74,12 +74,12 @@ export default function DesktopNav({
 
       <Button
         nativeButton={false}
-        render={<Link href="/materials" />}
+        render={<Link href="/cooperation" />}
         variant="accent"
         size="sm"
         className="mr-2 xl:mr-3 h-auto px-4 xl:px-5 py-2 text-xs xl:text-sm rounded-md"
       >
-        درخواست مصالح
+        همکاری با ما
       </Button>
     </div>
   );

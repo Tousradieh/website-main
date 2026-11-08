@@ -84,24 +84,24 @@ export default function HomePage() {
               id="why-heading"
               className="text-brand-900 font-heading font-black text-3xl md:text-4xl text-balance"
             >
-              تعهد به کیفیت، نه فقط سرعت
+              کمترین هزینه کل برای کارفرما
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                title: 'استانداردهای بین‌المللی',
-                desc: 'تمامی پروژه‌های ما مطابق با استانداردهای AASHTO، ASTM و آیین‌نامه‌های راه ایران اجرا می‌شوند.',
+                title: 'زنجیره یکپارچه تولید، ناوگان و اجرا',
+                desc: 'مصالح از معادن، سنگ‌شکن‌ها و کارخانه‌های خودی و ماشین‌آلات از ناوگان ملکی؛ هزینه تجهیز و تأمین کمتر و کار بدون توقف برای مصالح.',
                 num: '۰۱',
               },
               {
-                title: 'تجهیزات پیشرفته',
-                desc: 'ناوگان ماشین‌آلات مدرن و به‌روز برای اجرای سریع‌تر و دقیق‌تر پروژه‌ها.',
+                title: 'حضور بومی در سه استان خراسان',
+                desc: 'هفت سایت تولیدی در شعاع پروژه‌ها و بیش از سه دهه شناخت محورها، کارفرمایان و شرایط اجرایی منطقه.',
                 num: '۰۲',
               },
               {
-                title: 'نگهداری پس از تحویل',
-                desc: 'ارائه ضمانت‌نامه فنی و خدمات نگهداری دوره‌ای پس از تحویل پروژه.',
+                title: 'شریک قابل اتکا در پروژه‌های کلان',
+                desc: 'تمرکز بر پروژه‌های بزرگ راه، آزادراه و ریلی با کارفرمایان ملی و استانی، از جمله آزادراه مشهد–چناران.',
                 num: '۰۳',
               },
             ].map((item) => (
@@ -133,19 +133,19 @@ export default function HomePage() {
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-white font-heading font-black text-3xl md:text-4xl mb-4 text-balance">
-            پروژه بزرگ بعدی شما را ما می‌سازیم
+            پروژه بزرگ بعدی خراسان را با هم بسازیم
           </h2>
           <p className="text-brand-100/80 text-lg mb-8 leading-relaxed">
-            با کارشناسان فروش توس‌رادیه تماس بگیرید و مشاوره رایگان دریافت کنید.
+            برای مشارکت در پروژه، همکاری اجرایی، تأمین مصالح یا اجاره ماشین‌آلات با ما در ارتباط باشید.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button
               nativeButton={false}
-              render={<Link href="/materials" />}
+              render={<Link href="/cooperation" />}
               variant="accent"
               className="h-auto px-8 py-3.5 rounded-md"
             >
-              درخواست مصالح
+              همکاری با ما
             </Button>
             <Button
               nativeButton={false}

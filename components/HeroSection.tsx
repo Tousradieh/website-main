@@ -28,7 +28,7 @@ export default function HeroSection() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/40 bg-accent/10 text-accent text-sm font-medium mb-6">
           <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-          پیشرو در راه‌سازی ایران
+          پیمانکار یکپارچه راه و زیرساخت شرق کشور
         </div>
 
         <h1 className="text-white font-heading font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight text-balance mb-6">
@@ -38,9 +38,9 @@ export default function HeroSection() {
         </h1>
 
         <p className="text-brand-100/80 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-          توس‌رادیه با بهره‌گیری از تجربه ۳۰ ساله، پیشرفته‌ترین تجهیزات و
-          متخصص‌ترین مهندسان، استانداردهای جدیدی در راه‌سازی و زیرساخت
-          جاده‌ای کشور تعریف می‌کند.
+          از معدن و کارخانه تا اجرای نهایی: توس‌رادیه با هفت سایت تولید مصالح،
+          ناوگان ملکی و بیش از سه دهه سابقه، پروژه‌های راه، آزادراه و ریلی خراسان
+          را بدون وابستگی به بازار آزاد مصالح به نتیجه می‌رساند.
         </p>
 
         <div className="flex flex-wrap gap-4">
@@ -55,11 +55,11 @@ export default function HeroSection() {
           </Button>
           <Button
             nativeButton={false}
-            render={<Link href="/materials" />}
+            render={<Link href="/cooperation" />}
             variant="outline-inverse"
             className="h-auto gap-2 px-6 py-3 rounded-md text-base"
           >
-            درخواست مصالح
+            همکاری با ما
           </Button>
         </div>
 

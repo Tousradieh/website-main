@@ -86,11 +86,11 @@ export default function MobileNav({
 
         <Button
           nativeButton={false}
-          render={<Link href="/materials" onClick={onCloseMenu} />}
+          render={<Link href="/cooperation" onClick={onCloseMenu} />}
           variant="accent"
           className="mt-2 h-auto px-4 py-3 text-sm rounded-md"
         >
-          درخواست مصالح
+          همکاری با ما
         </Button>
       </div>
     </div>

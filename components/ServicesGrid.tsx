@@ -13,11 +13,11 @@ export default function ServicesGrid() {
             id="services-heading"
             className="text-brand-900 font-heading font-black text-3xl md:text-4xl lg:text-5xl text-balance"
           >
-            راه‌حل‌های جامع ساخت‌وساز
+            پیمانکار یکپارچه زیرساخت حمل‌ونقل
           </h2>
           <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-            از مطالعه و طراحی تا اجرا و نگهداری، توس‌رادیه در تمام مراحل
-            پروژه در کنار شماست.
+            از تولید مصالح تا اجرای نهایی، کیفیت و زمان پروژه را کارخانه‌ها و
+            ناوگان خودی کنترل می‌کنند، نه بازار آزاد.
           </p>
         </div>
 

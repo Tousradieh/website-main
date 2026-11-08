@@ -6,6 +6,7 @@ compatibility_date = "2024-12-01"
 #   npx wrangler secret put BALE_BOT_TOKEN
 #   npx wrangler secret put BALE_PROCUREMENT_CHAT_ID
 #   npx wrangler secret put BALE_SALES_CHAT_ID   # optional; falls back to procurement
+#   npx wrangler secret put BALE_PARTNERSHIP_CHAT_ID   # optional; falls back to sales, then procurement
 #   npx wrangler secret put TURNSTILE_SECRET
 #
 # Optional CORS origin (defaults to *). Example:

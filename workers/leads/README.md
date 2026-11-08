@@ -1,9 +1,10 @@
 # Leads → Bale Cloudflare Worker
 
-Receives materials-form and contact-form POSTs from the static site, verifies Cloudflare Turnstile (`TURNSTILE_SECRET`), then forwards a Persian message via Bale Bot API.
+Receives cooperation-form, contact-form and (currently disabled) materials-form POSTs from the static site, verifies Cloudflare Turnstile (`TURNSTILE_SECRET`), then forwards a Persian message via Bale Bot API.
 
 - `recipient: "procurement"` (default) → materials inquiry → `BALE_PROCUREMENT_CHAT_ID`
 - `recipient: "sales"` → contact page inquiry → `BALE_SALES_CHAT_ID` if set, otherwise procurement chat
+- `recipient: "partnership"` → `/cooperation` form → `BALE_PARTNERSHIP_CHAT_ID` if set, otherwise sales chat, otherwise procurement chat
 
 ## Setup
 
@@ -16,6 +17,8 @@ npx wrangler secret put BALE_PROCUREMENT_CHAT_ID
 npx wrangler secret put TURNSTILE_SECRET
 # optional; contact-form messages use procurement chat if omitted
 npx wrangler secret put BALE_SALES_CHAT_ID
+# optional; cooperation-form messages fall back to sales, then procurement chat
+npx wrangler secret put BALE_PARTNERSHIP_CHAT_ID
 ```
 
 Optional: lock CORS to your GitHub Pages origin in `wrangler.toml`:
@@ -47,6 +50,7 @@ NEXT_PUBLIC_SITE_URL=https://tousradieh.com
 BALE_BOT_TOKEN=...
 BALE_PROCUREMENT_CHAT_ID=...
 BALE_SALES_CHAT_ID=...
+BALE_PARTNERSHIP_CHAT_ID=...
 TURNSTILE_SECRET=...
 ```
 
