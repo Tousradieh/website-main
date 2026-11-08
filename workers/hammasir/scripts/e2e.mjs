@@ -206,6 +206,58 @@ await call(`/api/activities/${act.id}/claim`, { token: tA, body: { note: 'دید
 check('other-site manager cannot approve claim', (await call('/api/team/claims/review', { token: tOld, body: { employeeCode: '2001', activityId: act.id, approve: true } })).status === 404);
 check('manager approves claim', (await call('/api/team/claims/review', { token: tM, body: { employeeCode: '2001', activityId: act.id, approve: true } })).status === 200);
 
+
+// ---------- admin CRUD tables ----------
+check('team save bad id 400', (await admin('/api/admin/teams/save', { id: 'Bad Id', name: 'x' })).status === 400);
+check('team create', (await admin('/api/admin/teams/save', { id: 'site-c', name: 'کارگاه ج' })).status === 200);
+check('team rename', (await admin('/api/admin/teams/save', { id: 'site-c', name: 'کارگاه جیم' })).status === 200);
+r = await call('/api/admin/overview', { token: ADMIN });
+check('renamed in overview', r.data.units.find((u) => u.id === 'site-c')?.name === 'کارگاه جیم');
+check('delete team with members 409', (await admin('/api/admin/teams/site-a/delete', {})).status === 409);
+
+r = await admin('/api/admin/employees/save', { create: true, code: '3001', name: 'نفر جدید', teamId: 'site-c', department: 'rnd', isManager: false });
+const genPin = r.data.pin;
+check('create employee returns generated pin', r.status === 200 && /^\d{6}$/.test(genPin), r.data);
+check('generated pin logs in', (await login('3001', genPin)).status === 200);
+check('duplicate code 409', (await admin('/api/admin/employees/save', { create: true, code: '3001', name: 'x', teamId: 'site-c' })).status === 409);
+check('bad unit 400', (await admin('/api/admin/employees/save', { create: true, code: '3002', name: 'x', teamId: 'nope' })).status === 400);
+check('bad department 400', (await admin('/api/admin/employees/save', { create: true, code: '3002', name: 'x', teamId: 'site-c', department: 'zzz' })).status === 400);
+check('custom pin', (await admin('/api/admin/employees/save', { create: true, code: '3002', name: 'دوم', teamId: 'site-c', pin: '135792' })).data.pin === '135792');
+check('edit employee', (await admin('/api/admin/employees/save', { code: '3001', name: 'نفر ویرایش‌شده', teamId: 'site-c', department: 'hr', isManager: true })).status === 200);
+r = await call('/api/admin/employees', { token: ADMIN });
+const edited = r.data.employees.find((x) => x.code === '3001');
+check('list shows edit', edited?.name === 'نفر ویرایش‌شده' && edited.department === 'hr' && edited.isManager === 1, edited);
+check('edit unknown 404', (await admin('/api/admin/employees/save', { code: '9999', name: 'x', teamId: 'site-c' })).status === 404);
+const t3001 = (await login('3001', genPin)).data.token;
+for (let i = 0; i < 5; i++) await login('3001', '000000');
+r = await call('/api/admin/employees', { token: ADMIN });
+check('lock visible in list', r.data.employees.find((x) => x.code === '3001')?.locked === 1);
+r = await admin('/api/admin/employees/3001/pin', {});
+check('reset pin generates', /^\d{6}$/.test(r.data.pin) && r.data.pin !== genPin);
+check('reset pin unlocks and logs in', (await login('3001', r.data.pin)).status === 200);
+check('old pin rejected', (await login('3001', genPin)).status === 401);
+check('reset pin ends old session', (await call('/api/me', { token: t3001 })).status === 401);
+check('reset bad pin 400', (await admin('/api/admin/employees/3001/pin', { pin: '12' })).status === 400);
+
+check('mission needs one target', (await admin('/api/admin/missions/save', { week: 1, points: 10 })).status === 400);
+check('mission both targets 400', (await admin('/api/admin/missions/save', { employeeCode: '3001', teamId: 'site-c', week: 1, points: 10 })).status === 400);
+check('mission bad week', (await admin('/api/admin/missions/save', { employeeCode: '3001', week: 99, points: 10 })).status === 400);
+check('mission add person', (await admin('/api/admin/missions/save', { employeeCode: '3001', week: 2, points: 30, note: 'تست' })).status === 200);
+check('mission add team', (await admin('/api/admin/missions/save', { teamId: 'site-c', week: 2, points: 10, note: 'تیمی' })).status === 200);
+r = await call('/api/admin/missions', { token: ADMIN });
+const mrow = r.data.missions.find((x) => x.employeeCode === '3001');
+check('mission listed with name', mrow?.employeeName === 'نفر ویرایش‌شده' && r.data.missions.some((x) => x.teamName === 'کارگاه جیم'));
+check('mission edit', (await admin('/api/admin/missions/save', { id: mrow.id, week: 3, points: 45, note: 'اصلاح' })).status === 200);
+const t3002 = (await login('3002', '135792')).data.token;
+check('team mission reaches member', (await me(t3002)).wallet.missions === 10);
+check('delete team with missions 409', (await admin('/api/admin/teams/site-c/delete', {})).status === 409);
+check('mission delete', (await admin(`/api/admin/missions/${mrow.id}/delete`, {})).status === 200);
+
+check('delete employee', (await admin('/api/admin/employees/3001/delete', {})).status === 200);
+check('deleted cannot log in', (await login('3001', '111111')).status === 401);
+check('delete unknown 404', (await admin('/api/admin/employees/3001/delete', {})).status === 404);
+check('crud needs admin', (await call('/api/admin/employees', { token: tA })).status === 401);
+
 // ---------- hygiene ----------
 check('non-object json 400', (await call('/api/login', { raw: '"x"' })).status === 400);
 check('large body 413', (await call('/api/improvements', { token: tA, raw: JSON.stringify({ title: 'x'.repeat(70000) }) })).status === 413);

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Loader2, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formFieldClass } from '@/lib/form-ui';
+import { cn } from '@/lib/utils';
 import { useStoredToken } from '@/hooks/useStoredToken';
 import {
   activityKind,
@@ -19,8 +20,11 @@ import {
 import ActivityForm from './ActivityForm';
 import CapstoneReview from './CapstoneReview';
 import ClaimReview from './ClaimReview';
+import AdminMissions from './AdminMissions';
 import AdminPeople from './AdminPeople';
+import AdminPersonnel from './AdminPersonnel';
 import AdminStore from './AdminStore';
+import AdminUnits from './AdminUnits';
 import ImportBox from './ImportBox';
 import ImprovementReview from './ImprovementReview';
 import QuizForm from './QuizForm';
@@ -29,12 +33,25 @@ function fetchOverview(token: string) {
   return hammasirApi<AdminOverview>('/api/admin/overview', { token });
 }
 
+const ADMIN_SECTIONS = [
+  { id: 'dashboard', label: 'داشبورد' },
+  { id: 'approvals', label: 'تأییدها' },
+  { id: 'data', label: 'واحدها، پرسنل و امتیازها' },
+  { id: 'content', label: 'دوره‌ها و کوییزها' },
+  { id: 'store', label: 'جوایز و قرعه‌کشی' },
+] as const;
+
+type AdminSection = (typeof ADMIN_SECTIONS)[number]['id'];
+
 export default function AdminPanel() {
   const token = useStoredToken(adminToken);
   const [password, setPassword] = useState('');
   const [overview, setOverview] = useState<AdminOverview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [section, setSection] = useState<AdminSection>('dashboard');
+  // Bumped after a CSV import so the personnel and mission tables reload their own lists.
+  const [dataVersion, setDataVersion] = useState(0);
 
   const apply = useCallback((value: string, result: ApiResult<AdminOverview>) => {
     setLoading(false);
@@ -136,6 +153,10 @@ export default function AdminPanel() {
     pendingRedemptions,
     tracks,
   } = overview;
+  const badges: Partial<Record<AdminSection, number>> = {
+    approvals: pendingImprovements.length + pendingCapstones.length + pendingClaims.length,
+    store: pendingRedemptions.length,
+  };
   const stats = [
     { label: 'پرسنل ثبت‌شده', value: counts.employees },
     { label: 'پرسنل فعال', value: counts.active },
@@ -154,12 +175,35 @@ export default function AdminPanel() {
         </Button>
       </div>
 
+      <nav className="flex flex-wrap gap-2" aria-label="بخش‌های پنل مدیریت">
+        {ADMIN_SECTIONS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setSection(item.id)}
+            aria-pressed={section === item.id}
+            className={cn(
+              'rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
+              section === item.id ? 'border-brand-800 bg-brand-800 text-white' : 'border-border bg-card text-brand-900 hover:bg-brand-50',
+            )}
+          >
+            {item.label}
+            {badges[item.id] ? (
+              <span className="mr-1.5 rounded-full bg-gold px-1.5 text-xs text-brand-900">{faNumber(badges[item.id]!)}</span>
+            ) : null}
+          </button>
+        ))}
+      </nav>
+
       {error ? (
         <p role="alert" className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-4 py-3">
           {error}
         </p>
       ) : null}
 
+
+      {section === 'dashboard' ? (
+        <>
       <dl className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-card rounded-2xl border border-border p-4">
@@ -176,54 +220,6 @@ export default function AdminPanel() {
         </p>
       ) : null}
 
-      <ImprovementReview token={token} projects={pendingImprovements} onReviewed={refresh} />
-
-      {topImprovements.length ? (
-        <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-top-improvements">
-          <h2 id="admin-top-improvements" className="font-heading font-bold text-brand-900 text-lg mb-3">
-            رتبه‌بندی پروژه‌های بهبود (۱۲ پروژه برتر جایزه می‌گیرند)
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-muted-foreground text-xs">
-                <tr className="text-right">
-                  <th className="py-2 px-2 font-medium">رتبه</th>
-                  <th className="py-2 px-2 font-medium">پروژه</th>
-                  <th className="py-2 px-2 font-medium">فرد و واحد</th>
-                  <th className="py-2 px-2 font-medium">سهولت</th>
-                  <th className="py-2 px-2 font-medium">اثر</th>
-                  <th className="py-2 px-2 font-medium">امتیاز</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {topImprovements.map((project, i) => (
-                  <tr key={project.id} className={i < 12 ? 'bg-gold/5' : ''}>
-                    <td className="py-2 px-2">{faNumber(i + 1)}</td>
-                    <td className="py-2 px-2 text-brand-900">
-                      {project.title}
-                      <span className="block text-xs text-muted-foreground">{improvementCategoryLabel(project.category)}</span>
-                    </td>
-                    <td className="py-2 px-2 text-xs">
-                      {project.employeeName} · {project.teamName}
-                    </td>
-                    <td className="py-2 px-2">{faNumber(project.ease)}</td>
-                    <td className="py-2 px-2">{faNumber(project.impact)}</td>
-                    <td className="py-2 px-2 font-bold">{faNumber(project.points)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
-
-      <CapstoneReview token={token} capstones={pendingCapstones} onReviewed={refresh} />
-
-      <ClaimReview token={token} claims={pendingClaims} onReviewed={refresh} />
-
-      <AdminStore token={token} rewards={rewards} pending={pendingRedemptions} onChanged={refresh} />
-
-      <AdminPeople token={token} />
 
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-tracks">
         <h2 id="admin-tracks" className="font-heading font-bold text-brand-900 text-lg mb-4">
@@ -291,7 +287,77 @@ export default function AdminPanel() {
           </table>
         </div>
       </section>
+        </>
+      ) : null}
 
+      {section === 'approvals' ? (
+        <>
+      <ImprovementReview token={token} projects={pendingImprovements} onReviewed={refresh} />
+
+      {topImprovements.length ? (
+        <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-top-improvements">
+          <h2 id="admin-top-improvements" className="font-heading font-bold text-brand-900 text-lg mb-3">
+            رتبه‌بندی پروژه‌های بهبود (۱۲ پروژه برتر جایزه می‌گیرند)
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-muted-foreground text-xs">
+                <tr className="text-right">
+                  <th className="py-2 px-2 font-medium">رتبه</th>
+                  <th className="py-2 px-2 font-medium">پروژه</th>
+                  <th className="py-2 px-2 font-medium">فرد و واحد</th>
+                  <th className="py-2 px-2 font-medium">سهولت</th>
+                  <th className="py-2 px-2 font-medium">اثر</th>
+                  <th className="py-2 px-2 font-medium">امتیاز</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {topImprovements.map((project, i) => (
+                  <tr key={project.id} className={i < 12 ? 'bg-gold/5' : ''}>
+                    <td className="py-2 px-2">{faNumber(i + 1)}</td>
+                    <td className="py-2 px-2 text-brand-900">
+                      {project.title}
+                      <span className="block text-xs text-muted-foreground">{improvementCategoryLabel(project.category)}</span>
+                    </td>
+                    <td className="py-2 px-2 text-xs">
+                      {project.employeeName} · {project.teamName}
+                    </td>
+                    <td className="py-2 px-2">{faNumber(project.ease)}</td>
+                    <td className="py-2 px-2">{faNumber(project.impact)}</td>
+                    <td className="py-2 px-2 font-bold">{faNumber(project.points)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
+
+      <CapstoneReview token={token} capstones={pendingCapstones} onReviewed={refresh} />
+
+      <ClaimReview token={token} claims={pendingClaims} onReviewed={refresh} />
+        </>
+      ) : null}
+
+      {section === 'data' ? (
+        <>
+      <AdminUnits token={token} units={units} onChanged={refresh} />
+      <AdminPersonnel
+        key={`people-${dataVersion}`}
+        token={token}
+        units={units}
+        onChanged={refresh}
+        onSessionExpired={signOut}
+      />
+      <AdminMissions
+        key={`missions-${dataVersion}`}
+        token={token}
+        units={units}
+        currentWeek={campaign.week}
+        onChanged={refresh}
+        onSessionExpired={signOut}
+      />
+      <h2 className="font-heading font-bold text-brand-900 text-lg">ورود گروهی از اکسل یا CSV</h2>
       <div className="grid gap-6 lg:grid-cols-3">
         <ImportBox
           token={token}
@@ -299,7 +365,10 @@ export default function AdminPanel() {
           title="واحدها و کارگاه‌ها"
           columns="شناسه (انگلیسی)، نام"
           example={'golbahar,مجتمع گلبهار\ntechnical-office,دفتر فنی ستاد'}
-          onImported={refresh}
+          onImported={() => {
+            refresh();
+            setDataVersion((v) => v + 1);
+          }}
         />
         <ImportBox
           token={token}
@@ -307,7 +376,10 @@ export default function AdminPanel() {
           title="پرسنل"
           columns={`کد پرسنلی، نام، شناسه واحد/کارگاه، رمز ۶ تا ۸ رقمی (خالی = رمز قبلی بماند)، واحد سازمانی: ${DEPARTMENTS.map((d) => `${d.value} (${d.label})`).join('، ')}، ستون ششم «مدیر» برای مدیران و سرپرستان`}
           example={'1001,علی رضایی,golbahar,482193,plants\n1002,مریم احمدی,hq-finance,739051,finance,مدیر'}
-          onImported={refresh}
+          onImported={() => {
+            refresh();
+            setDataVersion((v) => v + 1);
+          }}
         />
         <ImportBox
           token={token}
@@ -315,10 +387,17 @@ export default function AdminPanel() {
           title="امتیاز ماموریت‌ها"
           columns="کد پرسنلی یا team:شناسه‌واحد، هفته، امتیاز (منفی برای اصلاح)، توضیح"
           example={'1001,2,40,ثبت کامل گزارش روزانه کارگاه\nteam:golbahar,2,25,ثبت ۱۰۰٪ داده GPS'}
-          onImported={refresh}
+          onImported={() => {
+            refresh();
+            setDataVersion((v) => v + 1);
+          }}
         />
       </div>
+        </>
+      ) : null}
 
+      {section === 'content' ? (
+        <>
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="admin-activities">
         <h2 id="admin-activities" className="font-heading font-bold text-brand-900 text-lg mb-4">
           دوره‌ها و کلاس‌ها
@@ -382,6 +461,16 @@ export default function AdminPanel() {
         )}
         <QuizForm token={token} onAdded={refresh} />
       </section>
+        </>
+      ) : null}
+
+      {section === 'store' ? (
+        <>
+      <AdminStore token={token} rewards={rewards} pending={pendingRedemptions} onChanged={refresh} />
+
+      <AdminPeople token={token} />
+        </>
+      ) : null}
     </div>
   );
 }
