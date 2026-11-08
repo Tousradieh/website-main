@@ -105,13 +105,18 @@ export default function HomePage() {
                 num: '۰۳',
               },
             ].map((item) => (
-              <div key={item.num} className="relative bg-card rounded-xl p-8 border border-border">
-                <span className="absolute top-6 left-6 text-5xl font-black text-brand-100 select-none">
-                  {item.num}
-                </span>
-                <h3 className="font-heading font-bold text-brand-900 text-xl mb-3">
-                  {item.title}
-                </h3>
+              <div key={item.num} className="bg-card rounded-xl p-6 sm:p-8 border border-border">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <h3 className="font-heading font-bold text-brand-900 text-xl text-balance">
+                    {item.title}
+                  </h3>
+                  <span
+                    className="flex-shrink-0 text-4xl sm:text-5xl leading-none font-black text-brand-100 select-none"
+                    aria-hidden="true"
+                  >
+                    {item.num}
+                  </span>
+                </div>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
               </div>
             ))}
